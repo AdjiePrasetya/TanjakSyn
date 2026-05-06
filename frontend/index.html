@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#3D0A12">
+<title>TanjakSyn – AI Cultural Heritage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════
+   CSS VARIABLES
+════════════════════════════════════════════════════════ */
+:root {
+  --c-maroon:      #5C0A1A;
+  --c-maroon-d:    #380610;
+  --c-maroon-dd:   #200308;
+  --c-maroon-l:    #7A1428;
+  --c-maroon-xl:   #A02040;
+  --c-gold:        #C4973A;
+  --c-gold-l:      #DDB85C;
+  --c-gold-xl:     #F0D080;
+  --c-gold-d:      #8A6018;
+  --c-gold-dd:     #5A3A08;
+  --c-cream:       #FBF4E4;
+  --c-cream-d:     #F0E4C8;
+  --c-ink:         #1A0808;
+  --c-text:        #2C1008;
+  --c-muted:       #7A5840;
+  --c-white:       #FFFDF8;
+
+  --r-sm: 12px; --r-md: 18px; --r-lg: 24px; --r-xl: 32px;
+  --s-xs: 4px; --s-sm: 8px; --s-md: 16px; --s-lg: 24px; --s-xl: 40px; --s-2xl: 64px;
+
+  --shadow-gold:   0 8px 40px rgba(196,151,58,.25), 0 2px 8px rgba(0,0,0,.15);
+  --shadow-maroon: 0 12px 48px rgba(92,10,26,.4),   0 4px 12px rgba(0,0,0,.2);
+  --shadow-float:  0 24px 80px rgba(0,0,0,.45);
+
+  --font-display:  'Cinzel Decorative', serif;
+  --font-heading:  'Cinzel', serif;
+  --font-body:     'EB Garamond', serif;
+
+  --ease:          cubic-bezier(.4,0,.2,1);
+  --bounce:        cubic-bezier(.34,1.56,.64,1);
+
+  /* Ornament gold line */
+  --ornament: linear-gradient(90deg, transparent 0%, var(--c-gold) 30%, var(--c-gold-l) 50%, var(--c-gold) 70%, transparent 100%);
+}
+
+/* ════════════════════════════════════════════════════════
+   RESET
+════════════════════════════════════════════════════════ */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--c-text);
+  background: var(--c-maroon-dd);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+img { display:block; max-width:100%; }
+button { cursor:pointer; font-family:inherit; border:none; background:none; }
+input, textarea { font-family:inherit; }
+a { text-decoration:none; color:inherit; }
+
+/* ════════════════════════════════════════════════════════
+   SCROLLBAR
+════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--c-gold-d); border-radius:99px; }
+
+/* ════════════════════════════════════════════════════════
+   APP LAYOUT
+════════════════════════════════════════════════════════ */
+#app {
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* ════════════════════════════════════════════════════════
+   DESKTOP SIDEBAR (≥ 900px)
+════════════════════════════════════════════════════════ */
+#sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--c-maroon-dd);
+  border-right: 1px solid rgba(196,151,58,.15);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 200;
+  transition: transform .35s var(--ease);
+  overflow: hidden;
+}
+
+.sidebar-pattern {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg, rgba(196,151,58,.03) 0, rgba(196,151,58,.03) 1px,
+    transparent 0, transparent 50%
+  );
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.sidebar-brand {
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(196,151,58,.12);
+}
+
+.sidebar-logo {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 4px 16px rgba(196,151,58,.4));
+}
+
+.sidebar-tagline {
+  color: rgba(240,208,128,.6);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-align: center;
+  font-family: var(--font-heading);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  color: rgba(240,208,128,.55);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  transition: all .25s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:3px;
+  background:var(--c-gold);
+  border-radius:0 3px 3px 0;
+  transform: scaleY(0);
+  transition: transform .25s var(--bounce);
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--c-gold-xl);
+  background: rgba(196,151,58,.08);
+}
+.nav-link.active::before { transform: scaleY(1); }
+.nav-link.active { color: var(--c-gold-l); }
+
+.nav-icon { font-size: 18px; flex-shrink: 0; }
+.nav-cta {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, var(--c-gold), var(--c-gold-d));
+  color: var(--c-maroon-dd);
+  border-radius: var(--r-md);
+  padding: 14px 20px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all .25s var(--ease);
+  box-shadow: var(--shadow-gold);
+}
+.nav-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(196,151,58,.4); }
+
+.sidebar-stats {
+  padding: 16px;
+  margin: 0 16px 20px;
+  background: rgba(196,151,58,.06);
+  border: 1px solid rgba(196,151,58,.12);
+  border-radius: var(--r-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.stat-item { text-align:center; }
+.stat-num { font-family:var(--font-heading); font-size:20px; color:var(--c-gold-l); font-weight:700; }
+.stat-label { font-size:9px; color:rgba(240,208,128,.5); letter-spacing:1px; font-family:var(--font-heading); }
+
+/* ════════════════════════════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════════════════════════════ */
+#main {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--c-cream);
+  position: relative;
+}
+
+/* ════════════════════════════════════════════════════════
+   MOBILE TOP BAR (< 900px)
+════════════════════════════════════════════════════════ */
+#topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  background: var(--c-maroon-d);
+  border-bottom: 1px solid rgba(196,151,58,.2);
+  padding: 12px 20px;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+
+.topbar-logo { height: 28px; width:auto; filter: brightness(1.15); }
+.topbar-menu {
+  width: 40px; height: 40px;
+  background: rgba(196,151,58,.12);
+  border-radius: var(--r-sm);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 5px;
+}
+.topbar-menu span {
+  display: block; width:20px; height:2px;
+  background: var(--c-gold-l); border-radius:2px;
+  transition: all .3s var(--ease);
+}
+
+/* Mobile overlay sidebar */
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 199;
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGES (sections)
+════════════════════════════════════════════════════════ */
+.page {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  animation: pageFadeIn .4s var(--ease);
+  overflow-y: auto;
+}
+.page.active { display: flex; }
+
+@keyframes pageFadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: SPLASH (mobile-only view)
+════════════════════════════════════════════════════════ */
+#page-splash {
+  background: var(--c-maroon-dd);
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  transition: opacity .6s var(--ease), visibility .6s;
+}
+#page-splash.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+
+.splash-bg {
+  position: absolute; inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(92,10,26,.9) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 90%, rgba(196,151,58,.08) 0%, transparent 50%);
+}
+.splash-grid {
+  position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(196,151,58,.04) 0, rgba(196,151,58,.04) 1px, transparent 0, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(196,151,58,.04) 0, rgba(196,151,58,.04) 1px, transparent 0, transparent 40px);
+  pointer-events:none;
+}
+.splash-content {
+  position: relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center;
+  gap:20px; padding:40px;
+  text-align:center;
+  animation: splashIn 1s var(--bounce);
+}
+@keyframes splashIn {
+  from { opacity:0; transform:translateY(40px) scale(.95); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.splash-logo { width:200px; animation:floatLogo 4s ease-in-out infinite; filter:drop-shadow(0 8px 30px rgba(196,151,58,.5)); }
+@keyframes floatLogo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.splash-line { width:80px; height:1px; background:var(--ornament); }
+.splash-title {
+  font-family:var(--font-display);
+  font-size:clamp(28px,6vw,48px);
+  color:var(--c-cream);
+  letter-spacing:2px;
+  line-height:1.2;
+}
+.splash-title span { color:var(--c-gold-l); }
+.splash-sub {
+  color:rgba(240,208,128,.65);
+  font-size:clamp(14px,3vw,18px);
+  font-style:italic;
+  letter-spacing:.5px;
+  line-height:1.7;
+}
+.splash-pill {
+  background:rgba(196,151,58,.12);
+  border:1px solid rgba(196,151,58,.3);
+  border-radius:99px;
+  padding:6px 20px;
+  color:var(--c-gold-l);
+  font-family:var(--font-heading);
+  font-size:10px;
+  letter-spacing:3px;
+}
+.splash-enter {
+  background:linear-gradient(135deg,var(--c-gold),var(--c-gold-d));
+  color:var(--c-maroon-dd);
+  font-family:var(--font-heading);
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:3px;
+  padding:16px 48px;
+  border-radius:99px;
+  box-shadow:var(--shadow-gold);
+  transition:all .3s var(--bounce);
+  margin-top:12px;
+}
+.splash-enter:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 16px 48px rgba(196,151,58,.45); }
+
+/* ════════════════════════════════════════════════════════
+   PAGE: HOME
+════════════════════════════════════════════════════════ */
+.page-hero {
+  background:linear-gradient(135deg, var(--c-maroon-d) 0%, var(--c-maroon) 60%, #7A1428 100%);
+  padding: clamp(32px,5vw,64px) clamp(20px,5vw,64px);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.hero-decor-1 {
+  position:absolute; top:-60px; right:-60px;
+  width:300px; height:300px;
+  border-radius:50%;
+  border:80px solid rgba(196,151,58,.04);
+}
+.hero-decor-2 {
+  position:absolute; bottom:-80px; left:-40px;
+  width:200px; height:200px;
+  border-radius:50%;
+  background:rgba(196,151,58,.04);
+}
+.hero-top-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:32px; position:relative; z-index:1;
+}
+.hero-greeting { color:rgba(240,208,128,.7); font-size:13px; letter-spacing:1px; font-family:var(--font-heading); }
+.hero-user-badge {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(196,151,58,.2);
+  border-radius:99px; padding:6px 14px;
+}
+.hero-user-dot { width:8px; height:8px; border-radius:50%; background:var(--c-gold-l); animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1); opacity:1;} 50%{transform:scale(1.4); opacity:.6;} }
+.hero-user-text { color:var(--c-gold-l); font-family:var(--font-heading); font-size:11px; letter-spacing:1px; }
+
+.hero-body {
+  position:relative; z-index:1;
+  display:grid; grid-template-columns:1fr auto; gap:24px; align-items:end;
+}
+.hero-headline {
+  font-family:var(--font-heading);
+  font-size:clamp(22px,3.5vw,42px);
+  color:var(--c-cream);
+  line-height:1.2;
+  font-weight:700;
+  margin-bottom:12px;
+}
+.hero-headline em { font-style:normal; color:var(--c-gold-l); }
+.hero-desc {
+  color:rgba(240,208,128,.65);
+  font-size:clamp(13px,1.5vw,16px);
+  line-height:1.7;
+  max-width:480px;
+  font-style:italic;
+  margin-bottom:24px;
+}
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; }
+.btn-primary {
+  background:linear-gradient(135deg,var(--c-gold),var(--c-gold-d));
+  color:var(--c-maroon-dd);
+  font-family:var(--font-heading);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:2px;
+  padding:14px 32px;
+  border-radius:var(--r-md);
+  box-shadow:var(--shadow-gold);
+  transition:all .3s var(--bounce);
+  display:flex; align-items:center; gap:8px;
+}
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 16px 40px rgba(196,151,58,.4); }
+.btn-ghost {
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(196,151,58,.3);
+  color:var(--c-gold-xl);
+  font-family:var(--font-heading);
+  font-size:12px;
+  letter-spacing:1.5px;
+  padding:14px 28px;
+  border-radius:var(--r-md);
+  transition:all .3s var(--ease);
+}
+.btn-ghost:hover { background:rgba(196,151,58,.1); border-color:var(--c-gold); }
+
+.hero-right-stats {
+  display:flex; flex-direction:column; gap:12px; text-align:center; min-width:120px;
+}
+.mini-stat {
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(196,151,58,.2);
+  border-radius:var(--r-md);
+  padding:16px;
+}
+.mini-stat-n { font-family:var(--font-heading); font-size:24px; font-weight:700; color:var(--c-gold-l); }
+.mini-stat-l { font-size:9px; letter-spacing:2px; color:rgba(240,208,128,.5); font-family:var(--font-heading); margin-top:2px; }
+
+/* ── Content grid below hero ── */
+.content-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:clamp(16px,2vw,28px);
+  padding:clamp(20px,3vw,48px) clamp(20px,4vw,64px);
+}
+.content-full  { grid-column:1/-1; }
+.content-2col  { grid-column:span 2; }
+
+/* ── Section headers ── */
+.sec-header {
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:var(--s-md);
+}
+.sec-title {
+  font-family:var(--font-heading);
+  font-size:clamp(14px,1.8vw,18px);
+  font-weight:700;
+  color:var(--c-maroon);
+  letter-spacing:.5px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec-title::before {
+  content:'';
+  display:block; width:3px; height:16px;
+  background:linear-gradient(180deg, var(--c-gold), var(--c-gold-d));
+  border-radius:2px;
+}
+.sec-link { font-size:12px; color:var(--c-gold-d); letter-spacing:1px; font-family:var(--font-heading); cursor:pointer; }
+.sec-link:hover { color:var(--c-maroon); }
+
+/* ── Cards ── */
+.card {
+  background:var(--c-white);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  box-shadow:0 2px 16px rgba(0,0,0,.06);
+  transition:all .3s var(--ease);
+  border:1px solid rgba(196,151,58,.08);
+}
+.card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,.12); }
+
+/* Tanjak catalog cards */
+.tanjak-cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(160px,1fr));
+  gap:16px;
+}
+.tanjak-card { cursor:pointer; }
+.tanjak-card-thumb {
+  aspect-ratio:1;
+  background:linear-gradient(135deg, var(--c-maroon-d), var(--c-maroon));
+  display:flex; align-items:center; justify-content:center;
+  font-size:48px; position:relative;
+  overflow:hidden;
+}
+.tanjak-card-thumb img { width:100%; height:100%; object-fit:cover; }
+.tanjak-card-thumb .badge-selected {
+  position:absolute; top:8px; right:8px;
+  background:var(--c-gold);
+  color:var(--c-maroon-dd);
+  font-family:var(--font-heading);
+  font-size:8px;
+  letter-spacing:1px;
+  padding:3px 8px;
+  border-radius:99px;
+  opacity:0; transition:.2s;
+}
+.tanjak-card.selected .badge-selected { opacity:1; }
+.tanjak-card.selected { border:2px solid var(--c-gold); box-shadow:0 0 0 3px rgba(196,151,58,.15); }
+.tanjak-card-info { padding:12px; }
+.tanjak-card-name { font-family:var(--font-heading); font-size:12px; font-weight:700; color:var(--c-maroon); }
+.tanjak-card-origin { font-size:11px; color:var(--c-muted); margin-top:2px; font-style:italic; }
+.tanjak-card-price { font-family:var(--font-heading); font-size:13px; color:var(--c-gold-d); margin-top:6px; font-weight:600; }
+
+/* Education cards */
+.edu-cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+  gap:16px;
+}
+.edu-card { cursor:pointer; }
+.edu-icon-wrap {
+  background:linear-gradient(135deg, var(--c-maroon-d), var(--c-maroon-l));
+  height:100px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:40px;
+}
+.edu-body { padding:14px; }
+.edu-category {
+  font-family:var(--font-heading); font-size:9px;
+  letter-spacing:2px; color:var(--c-gold-d);
+  text-transform:uppercase; margin-bottom:4px;
+}
+.edu-title { font-family:var(--font-heading); font-size:13px; font-weight:700; color:var(--c-maroon); margin-bottom:4px; }
+.edu-sub { font-size:12px; color:var(--c-muted); font-style:italic; }
+
+/* UMKM cards */
+.umkm-cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
+  gap:16px;
+}
+.umkm-card { cursor:pointer; }
+.umkm-card-header {
+  background:linear-gradient(135deg,var(--c-maroon-d),var(--c-maroon));
+  padding:20px;
+  display:flex; align-items:center; gap:14px;
+}
+.umkm-avatar {
+  width:52px; height:52px; border-radius:50%;
+  background:rgba(196,151,58,.2);
+  border:2px solid rgba(196,151,58,.4);
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  flex-shrink:0;
+}
+.umkm-name { font-family:var(--font-heading); font-size:14px; font-weight:700; color:var(--c-cream); }
+.umkm-loc { font-size:11px; color:rgba(240,208,128,.6); font-style:italic; margin-top:2px; }
+.umkm-body { padding:16px; }
+.umkm-desc { font-size:13px; color:var(--c-text); line-height:1.6; font-style:italic; margin-bottom:12px; }
+.umkm-meta { display:flex; justify-content:space-between; align-items:center; }
+.umkm-price { font-family:var(--font-heading); font-size:16px; font-weight:700; color:var(--c-maroon); }
+.umkm-commission { font-size:11px; color:var(--c-muted); }
+.star-row { display:flex; gap:2px; color:var(--c-gold); font-size:12px; }
+.btn-wa {
+  display:flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  color:white; padding:10px 18px; border-radius:var(--r-sm);
+  font-family:var(--font-heading); font-size:11px; letter-spacing:1px;
+  transition:all .25s var(--ease); box-shadow:0 4px 16px rgba(37,211,102,.3);
+}
+.btn-wa:hover { transform:translateY(-2px); }
+
+/* ════════════════════════════════════════════════════════
+   PAGE: TRY-ON
+════════════════════════════════════════════════════════ */
+#page-tryon {
+  padding: clamp(20px,3vw,48px) clamp(20px,4vw,64px);
+  gap: clamp(20px,2vw,32px);
+}
+
+.tryon-layout {
+  display:grid;
+  grid-template-columns: 1fr 380px;
+  gap:clamp(20px,2vw,32px);
+  align-items:start;
+}
+
+/* Viewport panel */
+.tryon-viewport-panel {
+  background:var(--c-maroon-dd);
+  border-radius:var(--r-xl);
+  overflow:hidden;
+  border:1px solid rgba(196,151,58,.15);
+  aspect-ratio:4/5;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.viewport-empty {
+  display:flex; flex-direction:column; align-items:center;
+  gap:20px; color:rgba(196,151,58,.4); cursor:pointer;
+  padding:40px; text-align:center;
+  transition:color .25s;
+}
+.viewport-empty:hover { color:rgba(196,151,58,.8); }
+.viewport-ring {
+  width:110px; height:110px; border-radius:50%;
+  border:2px dashed currentColor;
+  display:flex; align-items:center; justify-content:center;
+  font-size:42px;
+  animation:ringPulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100%{border-color:rgba(196,151,58,.3);}
+  50%{border-color:rgba(196,151,58,.7);}
+}
+.viewport-empty-title { font-family:var(--font-heading); font-size:16px; color:rgba(240,208,128,.6); letter-spacing:.5px; }
+.viewport-empty-sub { font-size:13px; font-style:italic; }
+
+#tryon-img { width:100%; height:100%; object-fit:cover; display:none; }
+#tryon-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
+.viewport-controls {
+  position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+  display:flex; gap:10px;
+}
+.vp-ctrl-btn {
+  background:rgba(0,0,0,.6); backdrop-filter:blur(8px);
+  border:1px solid rgba(196,151,58,.3);
+  color:var(--c-gold-l); padding:8px 18px;
+  border-radius:99px; font-family:var(--font-heading);
+  font-size:10px; letter-spacing:1.5px;
+  transition:all .2s;
+}
+.vp-ctrl-btn:hover { background:rgba(196,151,58,.15); }
+
+.detection-chip {
+  position:absolute; top:16px; right:16px;
+  display:flex; align-items:center; gap:7px;
+  background:rgba(0,0,0,.75); backdrop-filter:blur(8px);
+  border:1px solid rgba(196,151,58,.25);
+  border-radius:99px; padding:7px 14px;
+  opacity:0; transition:opacity .3s; pointer-events:none;
+}
+.detection-chip.show { opacity:1; }
+.chip-dot { width:7px; height:7px; border-radius:50%; background:var(--c-gold); animation:chipBlink 1s ease-in-out infinite; }
+.chip-dot.ok  { background:#22c55e; animation:none; }
+.chip-dot.err { background:#ef4444; animation:none; }
+@keyframes chipBlink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+.chip-text { font-family:var(--font-heading); font-size:10px; color:var(--c-cream); letter-spacing:.5px; }
+
+/* Control panel */
+.tryon-ctrl-panel {
+  display:flex; flex-direction:column; gap:20px;
+}
+.ctrl-card {
+  background:var(--c-white);
+  border:1px solid rgba(196,151,58,.1);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+}
+.ctrl-card-header {
+  background:linear-gradient(135deg,var(--c-maroon-d),var(--c-maroon));
+  padding:16px 20px;
+  display:flex; align-items:center; gap:10px;
+}
+.ctrl-card-title { font-family:var(--font-heading); font-size:12px; letter-spacing:2px; color:var(--c-gold-l); }
+.ctrl-card-body { padding:20px; }
+
+/* Tanjak selector thumbnails */
+.tanjak-selector-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+}
+.ts-thumb {
+  aspect-ratio:1; border-radius:var(--r-sm);
+  border:2px solid rgba(196,151,58,.15);
+  background:linear-gradient(135deg,var(--c-maroon-d),var(--c-maroon));
+  cursor:pointer; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; transition:all .2s var(--bounce); position:relative;
+}
+.ts-thumb:hover { border-color:var(--c-gold); transform:scale(1.05); }
+.ts-thumb.active { border-color:var(--c-gold); box-shadow:0 0 0 3px rgba(196,151,58,.2); }
+.ts-thumb img { width:100%; height:100%; object-fit:cover; }
+.ts-label {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.7));
+  color:var(--c-gold-xl); font-family:var(--font-heading);
+  font-size:8px; letter-spacing:1px; padding:8px 4px 4px;
+  text-align:center;
+}
+
+/* Upload zone */
+.upload-zone {
+  border:2px dashed rgba(196,151,58,.3);
+  border-radius:var(--r-md);
+  padding:24px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s var(--ease);
+  background:rgba(196,151,58,.02);
+}
+.upload-zone:hover { border-color:var(--c-gold); background:rgba(196,151,58,.05); }
+.upload-icon { font-size:32px; margin-bottom:8px; }
+.upload-title { font-family:var(--font-heading); font-size:12px; color:var(--c-maroon); letter-spacing:1px; margin-bottom:4px; }
+.upload-sub { font-size:11px; color:var(--c-muted); font-style:italic; }
+
+.btn-process {
+  width:100%;
+  background:linear-gradient(135deg,var(--c-maroon),var(--c-maroon-l));
+  color:var(--c-gold-xl);
+  border:1px solid rgba(196,151,58,.3);
+  padding:16px; border-radius:var(--r-md);
+  font-family:var(--font-heading);
+  font-size:12px; font-weight:700; letter-spacing:2px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:all .3s var(--bounce));
+  box-shadow:var(--shadow-maroon);
+}
+.btn-process:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 16px 40px rgba(92,10,26,.4); }
+.btn-process:disabled { opacity:.4; cursor:not-allowed; }
+
+/* Loading overlay */
+.loading-overlay {
+  position:absolute; inset:0;
+  background:rgba(20,3,6,.85); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s; z-index:10;
+}
+.loading-overlay.show { opacity:1; pointer-events:all; }
+.spinner {
+  width:60px; height:60px; border-radius:50%;
+  border:3px solid rgba(196,151,58,.15);
+  border-top-color:var(--c-gold);
+  animation:spin .9s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg);} }
+.loading-text { font-family:var(--font-heading); font-size:12px; letter-spacing:2px; color:var(--c-gold-l); }
+.loading-sub { font-size:12px; color:rgba(196,151,58,.5); font-style:italic; }
+
+/* ════════════════════════════════════════════════════════
+   PAGE: RESULT
+════════════════════════════════════════════════════════ */
+#page-result {
+  padding: clamp(20px,3vw,48px) clamp(20px,4vw,64px);
+  gap: clamp(20px,2vw,32px);
+}
+.result-layout {
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:clamp(20px,2vw,32px);
+  align-items:start;
+}
+.result-img-wrap {
+  background:var(--c-maroon-dd);
+  border-radius:var(--r-xl);
+  overflow:hidden;
+  aspect-ratio:4/5;
+  position:relative;
+  box-shadow:var(--shadow-float);
+}
+#result-img { width:100%; height:100%; object-fit:cover; display:block; }
+.result-img-badge {
+  position:absolute; top:16px; left:16px;
+  background:rgba(92,10,26,.85); backdrop-filter:blur(8px);
+  border:1px solid rgba(196,151,58,.35);
+  border-radius:var(--r-sm); padding:8px 16px;
+}
+.result-img-badge span { font-family:var(--font-heading); font-size:11px; letter-spacing:1.5px; color:var(--c-gold-l); }
+
+.result-actions-wrap { display:flex; flex-direction:column; gap:16px; }
+
+.result-phil-card {
+  background:var(--c-white);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  border:1px solid rgba(196,151,58,.12);
+  box-shadow:0 2px 16px rgba(0,0,0,.06);
+}
+.result-phil-header {
+  background:linear-gradient(135deg,var(--c-maroon-d),var(--c-maroon));
+  padding:16px 20px;
+}
+.rph-label { font-family:var(--font-heading); font-size:9px; letter-spacing:3px; color:rgba(196,151,58,.7); margin-bottom:4px; }
+.rph-title { font-family:var(--font-heading); font-size:16px; font-weight:700; color:var(--c-cream); }
+.result-phil-body { padding:16px 20px; }
+.rph-content { font-size:14px; color:var(--c-text); line-height:1.8; font-style:italic; }
+
+.result-price-card {
+  background:var(--c-white);
+  border-radius:var(--r-lg);
+  padding:20px;
+  border:1px solid rgba(196,151,58,.12);
+  box-shadow:0 2px 16px rgba(0,0,0,.06);
+  display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.rp-info { display:flex; flex-direction:column; gap:4px; }
+.rp-artisan { font-size:12px; color:var(--c-muted); font-style:italic; }
+.rp-price { font-family:var(--font-heading); font-size:26px; font-weight:700; color:var(--c-maroon); }
+.rp-commission { font-size:11px; color:var(--c-gold-d); font-family:var(--font-heading); }
+
+.result-cta-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn-save {
+  background:linear-gradient(135deg,var(--c-maroon),var(--c-maroon-l));
+  color:var(--c-gold-xl);
+  font-family:var(--font-heading);
+  font-size:11px; letter-spacing:1.5px;
+  padding:13px; border-radius:var(--r-md);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .25s var(--ease)); box-shadow:var(--shadow-maroon);
+}
+.btn-save:hover { transform:translateY(-2px); }
+.btn-retry {
+  background:var(--c-cream-d);
+  border:1px solid rgba(196,151,58,.2);
+  color:var(--c-maroon);
+  font-family:var(--font-heading);
+  font-size:11px; letter-spacing:1.5px;
+  padding:13px; border-radius:var(--r-md);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .25s;
+}
+.btn-retry:hover { background:var(--c-cream); }
+
+.proc-meta {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.proc-badge {
+  background:rgba(196,151,58,.1); border:1px solid rgba(196,151,58,.2);
+  border-radius:99px; padding:4px 12px;
+  font-family:var(--font-heading); font-size:9px; letter-spacing:1px;
+  color:var(--c-gold-d);
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: GALLERY
+════════════════════════════════════════════════════════ */
+#page-gallery { padding: clamp(20px,3vw,48px) clamp(20px,4vw,64px); gap:24px; }
+.gallery-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+  gap:16px;
+}
+.gallery-item {
+  aspect-ratio:3/4; border-radius:var(--r-lg);
+  overflow:hidden; position:relative; cursor:pointer;
+  background:var(--c-maroon-d);
+  transition:all .3s var(--ease));
+}
+.gallery-item:hover { transform:translateY(-4px); box-shadow:var(--shadow-float); }
+.gallery-item img { width:100%; height:100%; object-fit:cover; }
+.gallery-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(transparent 50%, rgba(20,3,6,.85) 100%);
+  padding:16px;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  opacity:0; transition:opacity .3s;
+}
+.gallery-item:hover .gallery-overlay { opacity:1; }
+.gallery-tanjak-name { font-family:var(--font-heading); font-size:12px; color:var(--c-gold-l); letter-spacing:1px; }
+
+/* ════════════════════════════════════════════════════════
+   MOBILE BOTTOM NAV
+════════════════════════════════════════════════════════ */
+#bottom-nav {
+  display:none;
+  position:fixed; bottom:0; left:0; right:0;
+  background:white;
+  border-top:1px solid rgba(196,151,58,.15);
+  padding:8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index:150;
+  box-shadow:0 -8px 32px rgba(0,0,0,.1);
+}
+.bnav-inner { display:flex; justify-content:space-around; }
+.bnav-item {
+  display:flex; flex-direction:column; align-items:center;
+  gap:3px; padding:6px 16px; border-radius:var(--r-sm);
+  transition:.2s;
+}
+.bnav-icon { font-size:22px; }
+.bnav-label { font-family:var(--font-heading); font-size:8px; letter-spacing:1px; color:#bbb; }
+.bnav-item.active .bnav-icon { filter:none; }
+.bnav-item.active .bnav-label { color:var(--c-maroon); }
+.bnav-center {
+  background:linear-gradient(135deg,var(--c-maroon),var(--c-maroon-d));
+  border-radius:var(--r-md);
+  padding:8px 24px;
+  transform:translateY(-10px);
+  box-shadow:var(--shadow-maroon);
+}
+.bnav-center .bnav-icon { font-size:24px; }
+.bnav-center .bnav-label { color:var(--c-gold-l); }
+
+/* ════════════════════════════════════════════════════════
+   PAGE HEADER (inside pages)
+════════════════════════════════════════════════════════ */
+.page-header {
+  background:linear-gradient(135deg,var(--c-maroon-d),var(--c-maroon));
+  padding:clamp(20px,3vw,32px) clamp(20px,4vw,64px);
+  display:flex; align-items:center; gap:16px;
+  flex-shrink:0;
+}
+.page-header-back {
+  width:40px; height:40px;
+  background:rgba(255,255,255,.1); border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--c-gold-l); font-size:20px; cursor:pointer;
+  transition:.2s;
+}
+.page-header-back:hover { background:rgba(255,255,255,.2); }
+.page-header-title { font-family:var(--font-heading); font-size:clamp(16px,2vw,24px); font-weight:700; color:var(--c-cream); }
+.page-header-sub { font-size:12px; color:rgba(240,208,128,.6); font-style:italic; margin-top:2px; }
+
+/* ════════════════════════════════════════════════════════
+   ORNAMENT DIVIDER
+════════════════════════════════════════════════════════ */
+.ornament-line {
+  height:1px; background:var(--ornament); margin:4px 0;
+}
+
+/* ════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════ */
+#toast {
+  position:fixed; top:24px; right:24px; z-index:9999;
+  background:var(--c-maroon-dd);
+  border:1px solid rgba(196,151,58,.3);
+  border-radius:var(--r-md);
+  padding:12px 24px;
+  font-family:var(--font-heading); font-size:12px;
+  color:var(--c-gold-xl); letter-spacing:.5px;
+  box-shadow:var(--shadow-float);
+  transform:translateY(-20px); opacity:0;
+  transition:all .35s var(--bounce));
+  pointer-events:none; max-width:320px;
+  display:flex; align-items:center; gap:10px;
+}
+#toast.show { transform:translateY(0); opacity:1; }
+#toast.err { border-color:rgba(239,68,68,.5); color:#fca5a5; }
+#toast.ok  { border-color:rgba(34,197,94,.5); color:#86efac; }
+
+/* ════════════════════════════════════════════════════════
+   HIDDEN INPUTS
+════════════════════════════════════════════════════════ */
+#file-input { display:none; }
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .content-grid { grid-template-columns:1fr 1fr; }
+  .content-2col { grid-column:1/-1; }
+  .tryon-layout, .result-layout { grid-template-columns:1fr; }
+  .tryon-viewport-panel { max-width:480px; margin:0 auto; width:100%; }
+}
+
+@media (max-width: 900px) {
+  #sidebar { transform:translateX(-100%); }
+  #sidebar.open { transform:translateX(0); box-shadow:var(--shadow-float); }
+  #sidebar-overlay.show { display:block; }
+  #main { margin-left:0; }
+  #topbar { display:flex; }
+  #bottom-nav { display:block; }
+  .page { padding-bottom:80px; }
+  #page-tryon, #page-result { padding-bottom:100px; }
+  .content-grid { grid-template-columns:1fr; padding:16px; gap:20px; }
+  .hero-body { grid-template-columns:1fr; }
+  .hero-right-stats { flex-direction:row; }
+  .mini-stat { flex:1; }
+}
+
+@media (max-width: 600px) {
+  #toast { top:auto; bottom:100px; left:16px; right:16px; }
+  .result-layout { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<input type="file" id="file-input" accept="image/*">
+<div id="toast"></div>
+
+<!-- SPLASH -->
+<div id="page-splash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+    <img src="assets/logo.png" alt="TanjakSyn" class="splash-logo" id="splash-logo-img">
+    <div class="splash-line"></div>
+    <div class="splash-title">Tanjak<span>Syn</span></div>
+    <p class="splash-sub">Bukan bayangan,<br>ini <em>augmented reality</em></p>
+    <div class="splash-pill">✦ AI CULTURAL HERITAGE PLATFORM ✦</div>
+    <button class="splash-enter" onclick="enterApp()">MASUK SEKARANG</button>
+  </div>
+</div>
+
+<div id="app">
+  <!-- ════════ SIDEBAR ════════ -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside id="sidebar">
+    <div class="sidebar-pattern"></div>
+    <div class="sidebar-brand">
+      <img src="assets/logo.png" alt="TanjakSyn" class="sidebar-logo" id="sidebar-logo">
+      <div class="sidebar-tagline">AI · CULTURE · HERITAGE</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <a class="nav-link active" data-page="home" onclick="navigate('home')">
+        <span class="nav-icon">🏛️</span>BERANDA
+      </a>
+      <a class="nav-link" data-page="tryon" onclick="navigate('tryon')">
+        <span class="nav-icon">🎭</span>VIRTUAL TRY-ON
+      </a>
+      <a class="nav-link" data-page="gallery" onclick="navigate('gallery')">
+        <span class="nav-icon">🖼️</span>GALERI
+      </a>
+      <a class="nav-link" data-page="education" onclick="navigate('education')">
+        <span class="nav-icon">📚</span>EDUKASI
+      </a>
+      <a class="nav-link" data-page="umkm" onclick="navigate('umkm')">
+        <span class="nav-icon">🛍️</span>KATALOG UMKM
+      </a>
+    </nav>
+    <div class="sidebar-stats" id="sidebar-stats">
+      <div class="stat-item"><div class="stat-num" id="s-tryon">0</div><div class="stat-label">TRY-ON</div></div>
+      <div class="stat-item"><div class="stat-num" id="s-tanjak">3</div><div class="stat-label">TANJAK</div></div>
+      <div class="stat-item"><div class="stat-num" id="s-umkm">3</div><div class="stat-label">UMKM</div></div>
+      <div class="stat-item"><div class="stat-num" id="s-gallery">0</div><div class="stat-label">GALERI</div></div>
+    </div>
+    <a class="nav-cta" onclick="navigate('tryon')">📷 MULAI TRY-ON</a>
+  </aside>
+
+  <!-- ════════ MAIN ════════ -->
+  <main id="main">
+    <!-- Mobile Top Bar -->
+    <div id="topbar">
+      <img src="assets/logo.png" alt="TanjakSyn" class="topbar-logo" id="topbar-logo">
+      <button class="topbar-menu" onclick="openSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- ── PAGE: HOME ── -->
+    <section class="page active" id="page-home">
+      <div class="page-hero">
+        <div class="hero-decor-1"></div><div class="hero-decor-2"></div>
+        <div class="hero-top-row">
+          <div class="hero-greeting">✦ HALO, LESTARIKAN BUDAYA HARI INI</div>
+          <div class="hero-user-badge">
+            <div class="hero-user-dot"></div>
+            <span class="hero-user-text">AI AKTIF</span>
+          </div>
+        </div>
+        <div class="hero-body">
+          <div>
+            <h1 class="hero-headline">Kenakan <em>Tanjak Melayu</em><br>dengan Teknologi AI</h1>
+            <p class="hero-desc">Platform augmented reality pertama untuk melestarikan budaya tanjak Melayu — coba secara virtual, pelajari filosofinya, dukung pengrajin lokal.</p>
+            <div class="hero-actions">
+              <button class="btn-primary" onclick="navigate('tryon')">📷 Coba Virtual Try-On</button>
+              <button class="btn-ghost" onclick="navigate('education')">📖 Pelajari Budaya</button>
+            </div>
+          </div>
+          <div class="hero-right-stats">
+            <div class="mini-stat"><div class="mini-stat-n" id="hs-tryon">0</div><div class="mini-stat-l">TRY-ON</div></div>
+            <div class="mini-stat"><div class="mini-stat-n">3</div><div class="mini-stat-l">TANJAK</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <!-- Tanjak catalog -->
+        <div class="content-full">
+          <div class="sec-header">
+            <div class="sec-title">Koleksi Tanjak</div>
+            <span class="sec-link" onclick="navigate('tryon')">Coba Sekarang →</span>
+          </div>
+          <div class="tanjak-cards" id="home-tanjak-grid">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Education -->
+        <div class="content-2col">
+          <div class="sec-header">
+            <div class="sec-title">Edukasi Filosofi</div>
+            <span class="sec-link" onclick="navigate('education')">Lihat Semua →</span>
+          </div>
+          <div class="edu-cards" id="home-edu-cards"></div>
+        </div>
+
+        <!-- UMKM mini -->
+        <div>
+          <div class="sec-header">
+            <div class="sec-title">Pengrajin UMKM</div>
+            <span class="sec-link" onclick="navigate('umkm')">Lihat Semua →</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px" id="home-umkm-mini"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: TRY-ON ── -->
+    <section class="page" id="page-tryon">
+      <div class="page-header">
+        <button class="page-header-back" onclick="navigate('home')">←</button>
+        <div>
+          <div class="page-header-title">Virtual Try-On</div>
+          <div class="page-header-sub">Pasang tanjak Melayu dengan AI</div>
+        </div>
+      </div>
+
+      <div style="padding:clamp(20px,3vw,40px) clamp(20px,4vw,64px); flex:1;">
+        <div class="tryon-layout">
+          <!-- Viewport -->
+          <div>
+            <div class="tryon-viewport-panel" id="tryon-viewport">
+              <div class="viewport-empty" id="viewport-empty" onclick="triggerUpload()">
+                <div class="viewport-ring">📷</div>
+                <div class="viewport-empty-title">Unggah Foto Wajahmu</div>
+                <div class="viewport-empty-sub">Klik atau drag foto ke sini<br>JPG, PNG hingga 10MB</div>
+              </div>
+              <img id="tryon-img" alt="Preview">
+              <canvas id="tryon-canvas"></canvas>
+              <div class="viewport-controls" id="vp-controls" style="display:none">
+                <button class="vp-ctrl-btn" onclick="triggerUpload()">🔄 GANTI FOTO</button>
+                <button class="vp-ctrl-btn" id="btn-process-vp" onclick="processImage()">✨ PASANG TANJAK</button>
+              </div>
+              <div class="detection-chip" id="det-chip">
+                <div class="chip-dot" id="chip-dot"></div>
+                <span class="chip-text" id="chip-text">Mendeteksi...</span>
+              </div>
+              <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">MEMASANG TANJAK</div>
+                <div class="loading-sub" id="loading-sub">AI sedang bekerja...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="tryon-ctrl-panel">
+            <!-- Tanjak picker -->
+            <div class="ctrl-card">
+              <div class="ctrl-card-header">
+                <span>🎩</span>
+                <span class="ctrl-card-title">PILIH TANJAK</span>
+              </div>
+              <div class="ctrl-card-body">
+                <div class="tanjak-selector-grid" id="tanjak-selector"></div>
+              </div>
+            </div>
+
+            <!-- Upload -->
+            <div class="ctrl-card">
+              <div class="ctrl-card-header">
+                <span>📁</span>
+                <span class="ctrl-card-title">UPLOAD FOTO</span>
+              </div>
+              <div class="ctrl-card-body">
+                <div class="upload-zone" onclick="triggerUpload()">
+                  <div class="upload-icon">🖼️</div>
+                  <div class="upload-title">PILIH FOTO</div>
+                  <div class="upload-sub">Wajah <strong>menghadap depan</strong>, tegak &amp; simetris<br>JPG/PNG hingga 15MB</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Process -->
+            <button class="btn-process" id="btn-process" disabled onclick="processImage()">
+              ✨ PASANG TANJAK SEKARANG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: RESULT ── -->
+    <section class="page" id="page-result">
+      <div class="page-header">
+        <button class="page-header-back" onclick="navigate('tryon')">←</button>
+        <div>
+          <div class="page-header-title">Hasil Try-On</div>
+          <div class="page-header-sub" id="result-subtitle">Tanjak berhasil dipasang!</div>
+        </div>
+      </div>
+
+      <div style="padding:clamp(20px,3vw,40px) clamp(20px,4vw,64px); flex:1;">
+        <div class="result-layout">
+          <!-- Result image -->
+          <div class="result-img-wrap">
+            <img id="result-img" src="" alt="Hasil">
+            <div class="result-img-badge"><span id="result-badge-name">Tanjak Lipatan</span></div>
+          </div>
+
+          <!-- Info panel -->
+          <div class="result-actions-wrap">
+            <!-- Philosophy -->
+            <div class="result-phil-card">
+              <div class="result-phil-header">
+                <div class="rph-label">✦ FILOSOFI TANJAK</div>
+                <div class="rph-title" id="result-phil-title">Simbol Keberanian</div>
+              </div>
+              <div class="ornament-line"></div>
+              <div class="result-phil-body">
+                <p class="rph-content" id="result-phil-content">—</p>
+              </div>
+            </div>
+
+            <!-- Price -->
+            <div class="result-price-card">
+              <div class="rp-info">
+                <div class="rp-artisan" id="result-artisan">Pengrajin: —</div>
+                <div class="rp-price" id="result-price">Rp 0</div>
+                <div class="rp-commission">Komisi UMKM: 10%</div>
+              </div>
+              <button class="btn-wa" id="result-wa-btn" onclick="contactWA()">
+                <span>💬</span> Hubungi Pengrajin
+              </button>
+            </div>
+
+            <!-- Meta badges -->
+            <div class="proc-meta" id="proc-meta"></div>
+
+            <!-- Actions -->
+            <div class="result-cta-row">
+              <button class="btn-save" onclick="downloadResult()">💾 SIMPAN FOTO</button>
+              <button class="btn-retry" onclick="navigate('tryon')">🔄 COBA LAGI</button>
+            </div>
+
+            <!-- Share to gallery -->
+            <button class="btn-primary" style="width:100%;justify-content:center" onclick="saveToGallery()">
+              🖼️ BAGIKAN KE GALERI
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: GALLERY ── -->
+    <section class="page" id="page-gallery">
+      <div class="page-header">
+        <button class="page-header-back" onclick="navigate('home')">←</button>
+        <div>
+          <div class="page-header-title">Galeri Komunitas</div>
+          <div class="page-header-sub">Hasil try-on dari seluruh nusantara</div>
+        </div>
+      </div>
+      <div id="page-gallery" style="padding:clamp(20px,3vw,40px) clamp(20px,4vw,64px); flex:1;">
+        <div class="gallery-grid" id="gallery-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--c-muted);font-style:italic;font-size:18px;">
+            Belum ada foto di galeri.<br>Jadilah yang pertama!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: EDUCATION ── -->
+    <section class="page" id="page-education">
+      <div class="page-header">
+        <button class="page-header-back" onclick="navigate('home')">←</button>
+        <div>
+          <div class="page-header-title">Edukasi Tanjak</div>
+          <div class="page-header-sub">Filosofi, sejarah, dan budaya</div>
+        </div>
+      </div>
+      <div style="padding:clamp(20px,3vw,40px) clamp(20px,4vw,64px); flex:1;">
+        <div class="edu-cards" id="edu-full-cards"></div>
+
+        <!-- Detail modal-like expansion -->
+        <div id="edu-detail" style="display:none;margin-top:24px;">
+          <div class="result-phil-card">
+            <div class="result-phil-header">
+              <div class="rph-label" id="edu-d-cat">KATEGORI</div>
+              <div class="rph-title" id="edu-d-title">Judul</div>
+            </div>
+            <div class="ornament-line"></div>
+            <div class="result-phil-body">
+              <p class="rph-content" id="edu-d-content">Konten</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: UMKM ── -->
+    <section class="page" id="page-umkm">
+      <div class="page-header">
+        <button class="page-header-back" onclick="navigate('home')">←</button>
+        <div>
+          <div class="page-header-title">Katalog UMKM</div>
+          <div class="page-header-sub">Dukung pengrajin tanjak lokal</div>
+        </div>
+      </div>
+      <div style="padding:clamp(20px,3vw,40px) clamp(20px,4vw,64px); flex:1;">
+        <div class="umkm-cards" id="umkm-full-cards"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Mobile Bottom Nav -->
+<nav id="bottom-nav">
+  <div class="bnav-inner">
+    <button class="bnav-item active" data-page="home" onclick="navigate('home')">
+      <span class="bnav-icon">🏛️</span>
+      <span class="bnav-label">BERANDA</span>
+    </button>
+    <button class="bnav-item" data-page="gallery" onclick="navigate('gallery')">
+      <span class="bnav-icon">🖼️</span>
+      <span class="bnav-label">GALERI</span>
+    </button>
+    <button class="bnav-item bnav-center" data-page="tryon" onclick="navigate('tryon')">
+      <span class="bnav-icon">📷</span>
+      <span class="bnav-label">COBA</span>
+    </button>
+    <button class="bnav-item" data-page="education" onclick="navigate('education')">
+      <span class="bnav-icon">📚</span>
+      <span class="bnav-label">EDUKASI</span>
+    </button>
+    <button class="bnav-item" data-page="umkm" onclick="navigate('umkm')">
+      <span class="bnav-icon">🛍️</span>
+      <span class="bnav-label">UMKM</span>
+    </button>
+  </div>
+</nav>
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+const S = {
+  page:          'home',
+  tanjak:        'tanjak_lipatan',
+  tanjakData:    [],
+  eduData:       [],
+  umkmData:      [],
+  uploadedB64:   null,
+  resultData:    null,
+  processingId:  null,
+};
+
+const API = window.location.origin;
+
+// ════════════════════════════════════════════════════════
+// SPLASH
+// ════════════════════════════════════════════════════════
+function enterApp() {
+  document.getElementById('page-splash').classList.add('hidden');
+  loadAllData();
+}
+
+// Auto-advance on desktop after 2s
+setTimeout(() => {
+  if (window.innerWidth >= 900) {
+    document.getElementById('page-splash').classList.add('hidden');
+    loadAllData();
+  }
+}, 2000);
+
+// ════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link, .bnav-item').forEach(l => {
+    l.classList.toggle('active', l.dataset.page === page);
+  });
+  const el = document.getElementById(`page-${page}`);
+  if (el) { el.classList.add('active'); el.scrollTop = 0; }
+  S.page = page;
+  closeSidebar();
+
+  if (page === 'gallery') loadGallery();
+}
+
+// ════════════════════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════════════════════
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ════════════════════════════════════════════════════════
+// LOGO FALLBACK
+// ════════════════════════════════════════════════════════
+const SVG_LOGO = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70">
+    <text x="8" y="52" font-family="Georgia,serif" font-size="44" font-weight="900" fill="#C4973A">Tanjak</text>
+    <text x="168" y="52" font-family="Georgia,serif" font-size="44" font-weight="900" fill="#7A1428">Syn</text>
+  </svg>`
+)}`;
+
+['splash-logo-img','sidebar-logo','topbar-logo'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) { el.onerror = () => el.src = SVG_LOGO; }
+});
+
+// ════════════════════════════════════════════════════════
+// LOAD ALL DATA
+// ════════════════════════════════════════════════════════
+async function loadAllData() {
+  await Promise.all([loadTanjak(), loadEducation(), loadUMKM(), loadStats()]);
+}
+
+async function loadTanjak() {
+  try {
+    const r = await fetch(`${API}/api/tanjak`);
+    const d = await r.json();
+    if (d.success) {
+      S.tanjakData = d.data;
+      renderHomeTanjak();
+      renderTanjakSelector();
+    }
+  } catch(e) { S.tanjakData = fallbackTanjak(); renderHomeTanjak(); renderTanjakSelector(); }
+}
+
+async function loadEducation() {
+  try {
+    const r = await fetch(`${API}/api/education`);
+    const d = await r.json();
+    if (d.success) { S.eduData = d.data; renderEdu(); }
+  } catch(e) { S.eduData = fallbackEdu(); renderEdu(); }
+}
+
+async function loadUMKM() {
+  try {
+    const r = await fetch(`${API}/api/umkm`);
+    const d = await r.json();
+    if (d.success) { S.umkmData = d.data; renderUMKM(); }
+  } catch(e) { S.umkmData = fallbackUMKM(); renderUMKM(); }
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}/api/stats`);
+    const d = await r.json();
+    if (d.success) {
+      const s = d.data;
+      ['s-tryon','hs-tryon'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = s.total_tryon || 0;
+      });
+      const sg = document.getElementById('s-gallery');
+      if (sg) sg.textContent = s.total_gallery || 0;
+    }
+  } catch(e) {}
+}
+
+async function loadGallery() {
+  try {
+    const r = await fetch(`${API}/api/gallery`);
+    const d = await r.json();
+    renderGallery(d.success ? d.data : []);
+  } catch(e) { renderGallery([]); }
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER HELPERS
+// ════════════════════════════════════════════════════════
+const ICONS = { tanjak_lipatan:'🎩', tanjak_dondang:'👑', tanjak_nobat:'🏺' };
+const fmt = p => `Rp ${Number(p).toLocaleString('id-ID')}`;
+
+function renderHomeTanjak() {
+  const el = document.getElementById('home-tanjak-grid');
+  if (!el || !S.tanjakData.length) return;
+  el.innerHTML = S.tanjakData.map(t => `
+    <div class="card tanjak-card ${S.tanjak===t.id?'selected':''}" data-id="${t.id}" onclick="selectTanjak('${t.id}',this)">
+      <div class="tanjak-card-thumb">
+        ${t.asset_available ? `<img src="/api/tanjak-asset/${t.file}" alt="${t.name}">` : `<span>${ICONS[t.id]||'🎩'}</span>`}
+        <div class="badge-selected">✓ DIPILIH</div>
+      </div>
+      <div class="tanjak-card-info">
+        <div class="tanjak-card-name">${t.name}</div>
+        <div class="tanjak-card-origin">${t.origin||''}</div>
+        <div class="tanjak-card-price">${fmt(t.price)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderTanjakSelector() {
+  const el = document.getElementById('tanjak-selector');
+  if (!el || !S.tanjakData.length) return;
+  el.innerHTML = S.tanjakData.map(t => `
+    <div class="ts-thumb ${S.tanjak===t.id?'active':''}" data-id="${t.id}" onclick="selectTanjak('${t.id}',this)">
+      ${t.asset_available ? `<img src="/api/tanjak-asset/${t.file}" alt="${t.name}">` : `<span>${ICONS[t.id]||'🎩'}</span>`}
+      <div class="ts-label">${t.name.replace('Tanjak ','')}</div>
+    </div>`).join('');
+}
+
+function renderEdu() {
+  const h = document.getElementById('home-edu-cards');
+  const f = document.getElementById('edu-full-cards');
+  const html = S.eduData.map(e => `
+    <div class="card edu-card" onclick="showEduDetail(${e.id})">
+      <div class="edu-icon-wrap">${e.icon}</div>
+      <div class="edu-body">
+        <div class="edu-category">${e.category}</div>
+        <div class="edu-title">${e.title}</div>
+        <div class="edu-sub">${e.subtitle}</div>
+      </div>
+    </div>`).join('');
+  if (h) h.innerHTML = html;
+  if (f) f.innerHTML = html;
+}
+
+function showEduDetail(id) {
+  const e = S.eduData.find(x => x.id === id);
+  if (!e) return;
+  navigate('education');
+  const d = document.getElementById('edu-detail');
+  d.style.display = 'block';
+  document.getElementById('edu-d-cat').textContent = e.category.toUpperCase();
+  document.getElementById('edu-d-title').textContent = e.title;
+  document.getElementById('edu-d-content').textContent = e.content;
+  d.scrollIntoView({ behavior:'smooth' });
+}
+
+function renderUMKM() {
+  const h = document.getElementById('home-umkm-mini');
+  const f = document.getElementById('umkm-full-cards');
+  const cardHtml = u => `
+    <div class="card umkm-card">
+      <div class="umkm-card-header">
+        <div class="umkm-avatar">${u.artisan?.[0]||'👤'}</div>
+        <div>
+          <div class="umkm-name">${u.artisan}</div>
+          <div class="umkm-loc">📍 ${u.location||''}</div>
+        </div>
+      </div>
+      <div class="umkm-body">
+        <div class="star-row">${'⭐'.repeat(Math.round(u.rating||5))}</div>
+        <p class="umkm-desc">${u.description||''}</p>
+        <div class="umkm-meta">
+          <div>
+            <div class="umkm-price">${fmt(u.tanjak_price||u.price||50000)}</div>
+            <div class="umkm-commission">Terjual: ${u.total_sold||0}</div>
+          </div>
+          <button class="btn-wa" onclick="openWA('${u.whatsapp||''}','${u.artisan}')">💬 HUBUNGI</button>
+        </div>
+      </div>
+    </div>`;
+
+  if (h) h.innerHTML = S.umkmData.slice(0,2).map(cardHtml).join('');
+  if (f) f.innerHTML = S.umkmData.map(cardHtml).join('');
+}
+
+function renderGallery(data) {
+  const el = document.getElementById('gallery-grid');
+  if (!el) return;
+  if (!data.length) {
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--c-muted);font-style:italic;font-size:18px;">
+      Belum ada foto di galeri.<br>Jadilah yang pertama mencoba!
+    </div>`;
+    return;
+  }
+  el.innerHTML = data.map(g => `
+    <div class="gallery-item">
+      <img src="${g.image_path}" alt="Gallery">
+      <div class="gallery-overlay">
+        <div class="gallery-tanjak-name">${g.tanjak_name||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// TANJAK SELECTION
+// ════════════════════════════════════════════════════════
+function selectTanjak(id, el) {
+  S.tanjak = id;
+  document.querySelectorAll('.tanjak-card').forEach(c => c.classList.toggle('selected', c.dataset.id === id));
+  document.querySelectorAll('.ts-thumb').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+}
+
+// ════════════════════════════════════════════════════════
+// FILE UPLOAD
+// ════════════════════════════════════════════════════════
+function triggerUpload() { document.getElementById('file-input').click(); }
+
+document.getElementById('file-input').addEventListener('change', function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { toast('Hanya file gambar yang diizinkan', 'err'); return; }
+  if (f.size > 15 * 1024 * 1024) { toast('File terlalu besar (maks 15MB)', 'err'); return; }
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    S.uploadedB64 = ev.target.result;
+    const img = document.getElementById('tryon-img');
+    img.src = S.uploadedB64;
+    img.style.display = 'block';
+    document.getElementById('viewport-empty').style.display = 'none';
+    document.getElementById('vp-controls').style.display = 'flex';
+    document.getElementById('btn-process').disabled = false;
+    document.getElementById('btn-process-vp').disabled = false;
+    showChip('Foto siap!', 'ok');
+    toast('Foto berhasil diunggah!', 'ok');
+  };
+  reader.readAsDataURL(f);
+  this.value = '';
+});
+
+// Drag & drop
+const viewport = document.getElementById('tryon-viewport');
+viewport.addEventListener('dragover', e => { e.preventDefault(); viewport.style.borderColor = 'var(--c-gold)'; });
+viewport.addEventListener('dragleave', () => { viewport.style.borderColor = ''; });
+viewport.addEventListener('drop', e => {
+  e.preventDefault(); viewport.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('file-input').files = dt.files; document.getElementById('file-input').dispatchEvent(new Event('change')); }
+});
+
+// ════════════════════════════════════════════════════════
+// PROCESS IMAGE
+// ════════════════════════════════════════════════════════
+// == Face direction error modal ==
+function showFaceDirectionError(msg) {
+  var existing = document.getElementById("face-err-modal");
+  if (existing) existing.remove();
+
+  var modal = document.createElement("div");
+  modal.id = "face-err-modal";
+  modal.setAttribute("style",
+    "position:fixed;inset:0;z-index:9000;" +
+    "display:flex;align-items:center;justify-content:center;" +
+    "background:rgba(0,0,0,.78);backdrop-filter:blur(6px);" +
+    "padding:20px;"
+  );
+
+  var h = "";
+  h += "<div style='background:var(--c-maroon-dd);border:1px solid rgba(196,151,58,.4);";
+  h += "border-radius:24px;max-width:440px;width:100%;padding:32px 28px;text-align:center;";
+  h += "box-shadow:0 24px 80px rgba(0,0,0,.65);animation:pageFadeIn .3s ease;'>";
+
+  h += "<div style='font-size:52px;margin-bottom:16px;'>&#128248;</div>";
+  h += "<h3 style='font-family:var(--font-heading);font-size:18px;font-weight:700;";
+  h += "color:var(--c-gold-l);letter-spacing:1px;margin-bottom:14px;'>Foto Ditolak</h3>";
+
+  h += "<div id='face-err-msg' style='font-size:13px;color:rgba(240,208,128,.85);";
+  h += "line-height:1.8;font-style:italic;margin-bottom:20px;";
+  h += "background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);";
+  h += "border-radius:12px;padding:14px 16px;'></div>";
+
+  h += "<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;'>";
+  h += "<div style='background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);";
+  h += "border-radius:14px;padding:16px 10px;text-align:center;'>";
+  h += "<div style='font-size:34px;margin-bottom:8px;'>&#128580;</div>";
+  h += "<div style='font-family:var(--font-heading);font-size:9px;color:#fca5a5;";
+  h += "letter-spacing:1.5px;margin-bottom:4px;'>DITOLAK</div>";
+  h += "<div style='font-size:11px;color:rgba(252,165,165,.7);font-style:italic;'>Wajah miring / samping</div>";
+  h += "</div>";
+  h += "<div style='background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);";
+  h += "border-radius:14px;padding:16px 10px;text-align:center;'>";
+  h += "<div style='font-size:34px;margin-bottom:8px;'>&#128512;</div>";
+  h += "<div style='font-family:var(--font-heading);font-size:9px;color:#86efac;";
+  h += "letter-spacing:1.5px;margin-bottom:4px;'>DITERIMA</div>";
+  h += "<div style='font-size:11px;color:rgba(134,239,172,.7);font-style:italic;'>Wajah lurus ke depan</div>";
+  h += "</div></div>";
+
+  h += "<div style='background:rgba(196,151,58,.07);border:1px solid rgba(196,151,58,.2);";
+  h += "border-radius:12px;padding:14px 16px;margin-bottom:22px;text-align:left;'>";
+  h += "<div style='font-family:var(--font-heading);font-size:9px;letter-spacing:2px;";
+  h += "color:var(--c-gold-d);margin-bottom:8px;'>&#128161; TIPS FOTO YANG BAIK</div>";
+  h += "<div style='font-size:12px;color:rgba(240,208,128,.75);line-height:1.9;'>";
+  h += "&#x2022; Wajah <strong style='color:var(--c-gold-l);'>menghadap lurus ke depan</strong><br>";
+  h += "&#x2022; Kepala <strong style='color:var(--c-gold-l);'>tegak</strong>, tidak miring kiri/kanan<br>";
+  h += "&#x2022; Wajah tampak <strong style='color:var(--c-gold-l);'>simetris</strong> di foto<br>";
+  h += "&#x2022; Pencahayaan cukup, wajah tidak terpotong";
+  h += "</div></div>";
+
+  h += "<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;'>";
+  h += "<button id='face-err-change' style='background:linear-gradient(135deg,var(--c-gold),var(--c-gold-d));";
+  h += "color:var(--c-maroon-dd);font-family:var(--font-heading);font-size:11px;font-weight:700;";
+  h += "letter-spacing:2px;padding:14px;border-radius:12px;border:none;cursor:pointer;'>";
+  h += "&#128247; GANTI FOTO</button>";
+  h += "<button id='face-err-close' style='background:rgba(255,255,255,.06);";
+  h += "border:1px solid rgba(196,151,58,.25);color:var(--c-gold-l);";
+  h += "font-family:var(--font-heading);font-size:11px;letter-spacing:1px;";
+  h += "padding:14px;border-radius:12px;cursor:pointer;'>TUTUP</button>";
+  h += "</div></div>";
+
+  modal.innerHTML = h;
+  document.body.appendChild(modal);
+  document.getElementById("face-err-msg").textContent = msg;
+  document.getElementById("face-err-change").onclick = function() { modal.remove(); triggerUpload(); };
+  document.getElementById("face-err-close").onclick  = function() { modal.remove(); };
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+}
+
+// == Loading step animation ==
+var _LOAD_STEPS = [
+  'Mendeteksi wajah...',
+  'Memvalidasi arah wajah...',
+  'Menghapus background...',
+  'Memotong area kepala-perut...',
+  'Memasang tanjak ke kepala...'
+];
+var _loadStepIv = null;
+
+function startLoadingSteps() {
+  var i = 0;
+  var el = document.getElementById('loading-sub');
+  if (!el) return;
+  el.textContent = _LOAD_STEPS[0];
+  clearInterval(_loadStepIv);
+  _loadStepIv = setInterval(function() {
+    i = (i + 1) % _LOAD_STEPS.length;
+    if (el) el.textContent = _LOAD_STEPS[i];
+  }, 1000);
+}
+
+function stopLoadingSteps() {
+  clearInterval(_loadStepIv);
+  var el = document.getElementById('loading-sub');
+  if (el) el.textContent = 'AI sedang bekerja...';
+}
+
+// == Process image ==
+async function processImage() {
+  if (!S.uploadedB64 || S.isProcessing) return;
+  S.isProcessing = true;
+  var lo = document.getElementById('loading');
+  lo.classList.add('show');
+  showChip('Memproses AI...', 'processing');
+  startLoadingSteps();
+  document.getElementById('btn-process').disabled = true;
+
+  try {
+    var res = await fetch(API + '/api/tryon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ person_image: S.uploadedB64, tanjak_id: S.tanjak })
+    });
+    var data = await res.json();
+
+    if (data.success) {
+      S.resultData = data;
+      showResult(data);
+      showChip('Berhasil!', 'ok');
+    } else {
+      var msg = data.message || 'Gagal memproses';
+      var isFaceDir = (msg.indexOf('menghadap') >= 0 || msg.indexOf('miring') >= 0 ||
+                       msg.indexOf('ke kiri') >= 0 || msg.indexOf('ke kanan') >= 0);
+      if (isFaceDir) {
+        showFaceDirectionError(msg);
+        showChip('Foto ditolak - arah wajah', 'err');
+      } else {
+        toast(msg, 'err');
+        showChip(msg.length > 55 ? msg.substring(0,52) + '...' : msg, 'err');
+      }
+    }
+  } catch(e) {
+    toast('Tidak dapat terhubung ke server backend.', 'err');
+    showChip('Koneksi gagal', 'err');
+  } finally {
+    S.isProcessing = false;
+    stopLoadingSteps();
+    lo.classList.remove('show');
+    document.getElementById('btn-process').disabled = false;
+  }
+}
+
+function showResult(data) {
+  document.getElementById('result-img').src = data.result_image;
+  document.getElementById('result-badge-name').textContent = data.tanjak_info.name;
+  document.getElementById('result-subtitle').textContent = data.tanjak_info.name + ' berhasil dipasang!';
+  document.getElementById('result-phil-title').textContent = data.tanjak_info.name;
+  document.getElementById('result-phil-content').textContent = data.tanjak_info.philosophy || '-';
+  document.getElementById('result-artisan').textContent = 'Pengrajin: ' + data.tanjak_info.artisan;
+  document.getElementById('result-price').textContent = fmt(data.tanjak_info.price);
+
+  var bgBadge = data.bg_removed ? '<span class="proc-badge">BG Removed</span>' : '';
+  var meta = document.getElementById('proc-meta');
+  meta.innerHTML =
+    '<span class="proc-badge">~' + data.proc_time + 's</span>' +
+    '<span class="proc-badge">' + (data.strategy || 'AI') + '</span>' +
+    '<span class="proc-badge">' + data.tanjak_info.name + '</span>' +
+    bgBadge;
+
+  navigate('result');
+}
+
+// ════════════════════════════════════════════════════════
+// DOWNLOAD & GALLERY
+// ════════════════════════════════════════════════════════
+function downloadResult() {
+  if (!S.resultData?.result_image) return;
+  const a = document.createElement('a');
+  a.href = S.resultData.result_image;
+  a.download = `tanjaksyn_${S.tanjak}_${Date.now()}.png`;
+  a.click();
+  toast('Foto berhasil disimpan!', 'ok');
+}
+
+async function saveToGallery() {
+  if (!S.resultData) return;
+  try {
+    await fetch(`${API}/api/gallery/save`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        tryon_id: S.resultData.tryon_id,
+        image_path: S.resultData.result_url || '',
+        tanjak_id: S.tanjak
+      })
+    });
+    toast('Foto dibagikan ke galeri!', 'ok');
+    loadStats();
+  } catch(e) { toast('Gagal membagikan foto', 'err'); }
+}
+
+// ════════════════════════════════════════════════════════
+// WHATSAPP
+// ════════════════════════════════════════════════════════
+function openWA(number, name) {
+  if (!number) { toast('Nomor WA tidak tersedia', 'err'); return; }
+  const msg = encodeURIComponent(`Halo ${name}, saya tertarik membeli tanjak dari TanjakSyn. Boleh saya tanya lebih lanjut?`);
+  window.open(`https://wa.me/${number}?text=${msg}`, '_blank');
+}
+function contactWA() {
+  if (!S.resultData?.tanjak_info) return;
+  openWA(S.resultData.tanjak_info.artisan_wa, S.resultData.tanjak_info.artisan);
+}
+
+// ════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════
+let _chipT;
+function showChip(text, type) {
+  const chip = document.getElementById('det-chip');
+  const dot  = document.getElementById('chip-dot');
+  const txt  = document.getElementById('chip-text');
+  chip.classList.add('show');
+  txt.textContent = text;
+  dot.className = 'chip-dot' + (type==='ok'?' ok' : type==='err'?' err' : '');
+  clearTimeout(_chipT);
+  if (type === 'ok' || type === 'err') _chipT = setTimeout(() => chip.classList.remove('show'), 3500);
+}
+
+let _toastT;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), 3800);
+}
+
+// ════════════════════════════════════════════════════════
+// FALLBACKS (when backend offline)
+// ════════════════════════════════════════════════════════
+function fallbackTanjak() { return [
+  {id:'tanjak_lipatan',name:'Tanjak Lipatan',file:'tanjak_lipatan.png',asset_available:false,origin:'Riau',price:50000,philosophy:'Simbol Keberanian dan Kepemimpinan',artisan:'Pak Hamdan',artisan_wa:'6281234567890'},
+  {id:'tanjak_dondang',name:'Tanjak Dondang',file:'tanjak_dondang.png',asset_available:false,origin:'Kepri',price:75000,philosophy:'Simbol Kesucian dan Ketulusan Hati',artisan:'Bu Fatimah',artisan_wa:'6289876543210'},
+  {id:'tanjak_nobat',  name:'Tanjak Nobat',  file:'tanjak_nobat.png',  asset_available:false,origin:'Johor-Melayu',price:100000,philosophy:'Simbol Kemuliaan dan Kehormatan',artisan:'Pak Ismail',artisan_wa:'6285551234567'},
+];}
+function fallbackEdu() { return [
+  {id:1,title:'Dua Cara Memasang Tanjak',subtitle:'Tradisi Yonder & Padinuk',icon:'🎓',category:'teknik',content:'Tanjak dapat dipasang dengan dua metode berbeda yang mencerminkan status pemakainya.'},
+  {id:2,title:'Makna Warna & Motif',subtitle:'Kode Tersembunyi dalam Kain',icon:'🌈',category:'filosofi',content:'Setiap warna tanjak memiliki makna mendalam dalam tradisi Melayu.'},
+  {id:3,title:'Sejarah Kesultanan Melayu',subtitle:'Warisan 7 Abad Budaya',icon:'🏛️',category:'sejarah',content:'Tanjak telah digunakan sejak abad ke-15 dalam Kesultanan Malaka.'},
+  {id:4,title:'Tanjak di Era Modern',subtitle:'Melestarikan Identitas',icon:'✨',category:'modern',content:'Tanjak kini hadir dalam berbagai acara modern sebagai simbol kebanggaan Melayu.'},
+];}
+function fallbackUMKM() { return [
+  {id:1,artisan:'Pak Hamdan',location:'Pekanbaru, Riau',whatsapp:'6281234567890',description:'Pengrajin tanjak generasi ke-3 dengan pengalaman 25 tahun.',rating:4.9,total_sold:127,tanjak_price:50000},
+  {id:2,artisan:'Bu Fatimah',location:'Tanjungpinang, Kepri',whatsapp:'6289876543210',description:'Maestro tanjak wanita pertama di Kepulauan Riau.',rating:4.8,total_sold:89,tanjak_price:75000},
+  {id:3,artisan:'Pak Ismail',location:'Batam, Kepri',whatsapp:'6285551234567',description:'Pemenang penghargaan Pengrajin Terbaik Nasional 2023.',rating:5.0,total_sold:45,tanjak_price:100000},
+];}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // On desktop, skip splash and load data
+  if (window.innerWidth >= 900) {
+    document.getElementById('page-splash').style.display = 'none';
+    loadAllData();
+  }
+  // On mobile, wait for user to click enter
+});
+</script>
+</body>
+</html>
