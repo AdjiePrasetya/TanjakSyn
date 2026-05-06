@@ -1,17 +1,21 @@
-# Gunakan base image Python
-FROM python:3.10
+FROM python:3.10-slim
 
-# Set working directory
+# Install dependency system (WAJIB buat mediapipe & cv2)
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy semua file ke dalam container
-COPY . /app
+COPY . .
 
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Buka port 7860
-EXPOSE 7860
+# Gunakan port 8080 (standar cloud)
+EXPOSE 8080
 
-# Jalankan aplikasi
-CMD ["python", "app.py"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"]
