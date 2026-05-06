@@ -1,21 +1,17 @@
-FROM python:3.10-slim
+# Gunakan base image Python
+FROM python:3.10
 
-# Install system dependencies (INI YANG FIX ERROR)
-RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+# Set working directory
 WORKDIR /app
 
-# Copy project
-COPY . .
+# Copy semua file ke dalam container
+COPY . /app
 
-# Install python dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Jalankan app
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"]
+# Buka port 7860
+EXPOSE 7860
+
+# Jalankan aplikasi
+CMD ["python", "app.py"]
