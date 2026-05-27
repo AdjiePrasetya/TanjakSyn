@@ -896,30 +896,42 @@
        JAVASCRIPT LOGIC (AJAX & UI Toggles)
        ════════════════════════════════════════════════════════ -->
   <script>
-    // Global Data Cache
-    let tanjakList = [];
-    let umkmList = [];
-    let currentTanjakModalMode = 'add';
-    let currentUmkmModalMode = 'add';
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 1. GLOBAL STATE & DATA CACHE (ADMIN DASHBOARD STATE)
+    // ════════════════════════════════════════════════════════════════════════════════════
+    let tanjakList = [];              // Cache array data katalog tanjak dari API khusus admin
+    let umkmList = [];                // Cache array data profil UMKM dari API
+    let currentTanjakModalMode = 'add'; // Mode aktif modal tanjak ('add' untuk tambah, 'edit' untuk ubah)
+    let currentUmkmModalMode = 'add';   // Mode aktif modal UMKM ('add' untuk tambah, 'edit' untuk ubah)
 
-    // Page Init
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 2. INISIALISASI HALAMAN & PENGIKAT EVENT (PAGE INITIALIZATION)
+    // ════════════════════════════════════════════════════════════════════════════════════
     window.addEventListener('DOMContentLoaded', () => {
+      // Memeriksa status login session admin sesaat setelah struktur halaman siap
       checkSessionStatus();
 
-      // Bind Login Form
+      // Mengikat pengiriman (submit) form login ke fungsi autentikasi
       document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
         submitLogin();
       });
 
-      // Bind Logout Button
+      // Mengikat tombol keluar (logout) ke fungsi logout API
       document.getElementById('btn-logout-action').addEventListener('click', () => {
         submitLogout();
       });
     });
 
-    // ── Session Check ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 3. PENGECEKAN SESI DAN TRANSISI LAYAR (SESSION & UI TRANSITIONS)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     async function checkSessionStatus() {
+      /**
+       * Menghubungi API check-session untuk memverifikasi apakah admin telah masuk.
+       * Jika ya, langsung buka layar Dashboard utama. Jika tidak, tampilkan Form Login.
+       */
       try {
         const res = await fetch('/api/admin/check-session');
         const data = await res.json();
@@ -935,19 +947,32 @@
     }
 
     function showLogin() {
+      /**
+       * Menampilkan form login admin dan menyembunyikan kontainer dashboard utama.
+       */
       document.getElementById('login-guard').classList.remove('hidden');
       document.getElementById('dashboard-layout').classList.remove('visible');
     }
 
     function showDashboard() {
+      /**
+       * Menampilkan kontainer dashboard utama dan memicu pemuatan data tabel CRUD.
+       */
       document.getElementById('login-guard').classList.add('hidden');
       document.getElementById('dashboard-layout').classList.add('visible');
-      // Load tables data
+      // Memuat seluruh data dari database SQLite
       loadAllData();
     }
 
-    // ── Authentication API Calls ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 4. AUTENTIKASI API (LOGIN / LOGOUT OPERATIONS)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     async function submitLogin() {
+      /**
+       * Mengirimkan kredensial administrator (username & password) ke API login.
+       * Menerapkan session cookie jika autentikasi sukses.
+       */
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
 
@@ -971,6 +996,9 @@
     }
 
     async function submitLogout() {
+      /**
+       * Menghancurkan session login administrator di backend dan mengembalikan UI ke layar login.
+       */
       try {
         const res = await fetch('/api/admin/logout', { method: 'POST' });
         const data = await res.json();
@@ -983,8 +1011,16 @@
       }
     }
 
-    // ── Tabs Switching ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 5. PERGANTIAN TAB MODUL (TAB SYSTEM SWITCHING)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function switchTab(tabId) {
+      /**
+       * Mengatur pergantiaan visual menu aktif antar modul Tanjak dan modul pengrajin UMKM.
+       * 
+       * @param {string} tabId - Nama modul target ('tanjak' atau 'umkm').
+       */
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
@@ -997,17 +1033,26 @@
       }
     }
 
-    // ── Load All Tables Data ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 6. QUERY & SYNC REST API DATA (TABLES REFRESH FLOW)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     async function loadAllData() {
+      /**
+       * Memicu pemuatan data paralel seluruh tabel dan sinkronisasi dropdown pemilih.
+       */
       await Promise.all([fetchTanjakList(), fetchUmkmList()]);
       populateTanjakDropdown();
     }
 
     async function fetchTanjakList() {
+      /**
+       * Mengambil daftar seluruh tanjak (termasuk yang nonaktif) dari API terproteksi admin.
+       */
       try {
         const res = await fetch('/api/admin/tanjak');
         if (res.status === 401) {
-          showLogin();
+          showLogin(); // Otomatis tendang keluar jika session kedaluwarsa (HTTP 401)
           return;
         }
         const resData = await res.json();
@@ -1021,8 +1066,11 @@
     }
 
     async function fetchUmkmList() {
+      /**
+       * Mengambil daftar profil pengrajin UMKM dari database.
+       */
       try {
-        const res = await fetch('/api/umkm'); // public route /api/umkm is fine
+        const res = await fetch('/api/umkm');
         const resData = await res.json();
         if (resData.success) {
           umkmList = resData.data;
@@ -1033,8 +1081,14 @@
       }
     }
 
-    // ── Renders ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 7. RENDER ELEMENT TABEL DINAMIS (DYNAMIC TABLE GENERATION)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function renderTanjakTable(list) {
+      /**
+       * Menyusun baris-baris HTML (<tr>) data katalog tanjak dan merendernya pada DOM.
+       */
       const tbody = document.getElementById('tanjak-table-body');
       tbody.innerHTML = '';
 
@@ -1044,10 +1098,12 @@
       }
 
       list.forEach(t => {
+        // Penentuan warna lencana status keaktifan tanjak
         const statusBadge = t.is_active
           ? `<span class="badge-status active">Aktif</span>`
           : `<span class="badge-status inactive">Nonaktif</span>`;
 
+        // Menampilkan gambar miniatur jika file fisik tersedia
         const previewUrl = `/api/tanjak-asset/${t.file}`;
         const imageHtml = t.asset_available
           ? `<img src="${previewUrl}" class="thumb-preview" alt="${t.name}">`
@@ -1079,6 +1135,9 @@
     }
 
     function renderUmkmTable(list) {
+      /**
+       * Menyusun baris-baris HTML (<tr>) data profil UMKM pengrajin.
+       */
       const tbody = document.getElementById('umkm-table-body');
       tbody.innerHTML = '';
 
@@ -1110,6 +1169,10 @@
     }
 
     function populateTanjakDropdown() {
+      /**
+       * Mengisi opsi pilihan tanjak pada form relasi tambah/edit UMKM 
+       * agar administrator dapat memetakan jenis produk unggulan sang pengrajin.
+       */
       const select = document.getElementById('u-tanjak');
       select.innerHTML = '<option value="">-- Hubungkan dengan Tanjak --</option>';
 
@@ -1121,21 +1184,44 @@
       });
     }
 
-    // ── Search Filters ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 8. FILTER PENCAKIRAN DATA SECARA REAKTIF (CLIENT-SIDE SEARCH FILTERS)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function filterTanjak() {
+      /**
+       * Menyaring baris tabel tanjak berdasarkan input teks kata kunci pencarian.
+       */
       const q = document.getElementById('tanjak-search').value.toLowerCase();
-      const filtered = tanjakList.filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.origin.toLowerCase().includes(q));
+      const filtered = tanjakList.filter(t => 
+        t.name.toLowerCase().includes(q) || 
+        t.id.toLowerCase().includes(q) || 
+        t.origin.toLowerCase().includes(q)
+      );
       renderTanjakTable(filtered);
     }
 
     function filterUmkm() {
+      /**
+       * Menyaring baris tabel UMKM berdasarkan input nama pengrajin atau domisili lokasi.
+       */
       const q = document.getElementById('umkm-search').value.toLowerCase();
-      const filtered = umkmList.filter(u => u.artisan.toLowerCase().includes(q) || u.location.toLowerCase().includes(q));
+      const filtered = umkmList.filter(u => 
+        u.artisan.toLowerCase().includes(q) || 
+        u.location.toLowerCase().includes(q)
+      );
       renderUmkmTable(filtered);
     }
 
-    // ── Tanjak Modal Actions ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 9. AKSI DATA MODAL TANJAK (TANJAK CRUD MODAL HANDLERS)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function openTanjakModal(mode, id = '') {
+      /**
+       * Membuka modal form dialog tanjak, mengisi isian kolom secara otomatis 
+       * jika mode edit, atau mereset kolom jika mode penambahan baru.
+       */
       currentTanjakModalMode = mode;
       const form = document.getElementById('tanjak-form');
       form.reset();
@@ -1155,6 +1241,7 @@
 
         const t = tanjakList.find(item => item.id === id);
         if (t) {
+          // Pre-populate input fields
           document.getElementById('t-id').value = t.id;
           document.getElementById('t-name').value = t.name;
           document.getElementById('t-origin').value = t.origin;
@@ -1174,10 +1261,17 @@
     }
 
     function closeTanjakModal() {
+      /**
+       * Menutup jendela modal tanjak.
+       */
       document.getElementById('tanjak-modal').classList.remove('show');
     }
 
     async function saveTanjak(e) {
+      /**
+       * Mengumpulkan isian form tanjak, menyusunnya dalam struktur multipart/form-data
+       * (agar mendukung upload berkas gambar ornamen), dan mengirimkannya ke API backend.
+       */
       e.preventDefault();
       const form = document.getElementById('tanjak-form');
       const formData = new FormData(form);
@@ -1186,12 +1280,13 @@
       if (currentTanjakModalMode === 'edit') {
         const id = document.getElementById('t-id').value;
         url = `/api/admin/tanjak/edit/${id}`;
-        // Since input is disabled, formData won't capture id, but endpoint does not need it in body if in route
+        // Field dinonaktifkan (disabled) tidak akan otomatis masuk ke FormData, 
+        // namun parameter ID di-handle aman lewat URL route oleh Flask.
       }
 
       try {
         const res = await fetch(url, {
-          method: 'POST', // Use POST with multipart for compatibility
+          method: 'POST', // POST digunakan dengan form-data multi-part agar kompatibel dengan Flask upload
           body: formData
         });
         const resData = await res.json();
@@ -1199,7 +1294,7 @@
         if (resData.success) {
           showToast(resData.message || 'Data tanjak berhasil disimpan', 'success');
           closeTanjakModal();
-          loadAllData();
+          loadAllData(); // Refresh UI table
         } else {
           showToast(resData.message || 'Gagal menyimpan data tanjak', 'error');
         }
@@ -1209,6 +1304,9 @@
     }
 
     async function deleteTanjakAction(id) {
+      /**
+       * Melakukan aksi penonaktifan tanjak (soft delete / set is_active=0) di database.
+       */
       if (!confirm('Apakah Anda yakin ingin menonaktifkan Tanjak ini? (Soft Delete)')) return;
 
       try {
@@ -1226,8 +1324,14 @@
       }
     }
 
-    // ── UMKM Modal Actions ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 10. AKSI DATA MODAL UMKM (UMKM CRUD MODAL HANDLERS)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function openUmkmModal(mode, id = null) {
+      /**
+       * Membuka modal form dialog UMKM pengrajin.
+       */
       currentUmkmModalMode = mode;
       const form = document.getElementById('umkm-form');
       form.reset();
@@ -1255,10 +1359,16 @@
     }
 
     function closeUmkmModal() {
+      /**
+       * Menutup jendela modal UMKM.
+       */
       document.getElementById('umkm-modal').classList.remove('show');
     }
 
     async function saveUmkm(e) {
+      /**
+       * Menyusun payload isian form UMKM ke format JSON dan mengirimkannya ke API.
+       */
       e.preventDefault();
 
       const payload = {
@@ -1302,6 +1412,9 @@
     }
 
     async function deleteUmkmAction(id) {
+      /**
+       * Menghapus profil pengrajin UMKM dari database SQLite secara permanen.
+       */
       if (!confirm('Apakah Anda yakin ingin menghapus data UMKM Artisan ini secara permanen?')) return;
 
       try {
@@ -1319,8 +1432,18 @@
       }
     }
 
-    // ── Toast Alert Helper ──
+    // ════════════════════════════════════════════════════════════════════════════════════
+    // 11. LAYANAN BALON FLASH ALERT (TOAST ALERTS SYSTEM HELPER)
+    // ════════════════════════════════════════════════════════════════════════════════════
+
     function showToast(message, type = 'success') {
+      /**
+       * Membuat elemen balon notifikasi melayang baru, memasukkannya ke container toast,
+       * dan mengaturnya agar memudar keluar (fade-out) lalu dihapus otomatis dalam 4 detik.
+       * 
+       * @param {string} message - Isi pesan alert.
+       * @param {string} type - Jenis kelas alert ('success' atau 'error').
+       */
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
@@ -1330,11 +1453,12 @@
       `;
       container.appendChild(toast);
 
+      // Memulai transisi keluar setelah 4 detik
       setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(10px)';
         toast.style.transition = 'all 0.4s';
-        setTimeout(() => toast.remove(), 400);
+        setTimeout(() => toast.remove(), 400); // Hapus elemen fisik dari DOM setelah animasi rampung
       }, 4000);
     }
   </script>

@@ -1585,71 +1585,99 @@ a { text-decoration:none; color:inherit; }
 </nav>
 
 <script>
-// ════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 1. MANAJEMEN STATE APLIKASI (CLIENT-SIDE STATE)
+// ════════════════════════════════════════════════════════════════════════════════════
+// Objek global S digunakan untuk menampung seluruh state runtime aplikasi SPA ini.
 const S = {
-  page:          'home',
-  tanjak:        'tanjak_lipatan',
-  tanjakData:    [],
-  eduData:       [],
-  umkmData:      [],
-  uploadedB64:   null,
-  resultData:    null,
-  processingId:  null,
-  cameraStream:  null,
-  facingMode:    'user',
+  page:          'home',             // Halaman aktif saat ini (home, education, umkm, gallery, dll.)
+  tanjak:        'tanjak_lipatan',   // ID tanjak terpilih untuk disimulasikan oleh AI
+  tanjakData:    [],                 // Cache array data katalog tanjak dari API
+  eduData:       [],                 // Cache array data modul edukasi dari API
+  umkmData:      [],                 // Cache array data mitra UMKM dari API
+  uploadedB64:   null,               // String Base64 gambar potret masukan pengguna
+  resultData:    null,               // Data respons sukses hasil try-on dari server
+  processingId:  null,               // Penanda ID proses aktif (opsional)
+  cameraStream:  null,               // Menyimpan objek MediaStream kamera yang sedang aktif
+  facingMode:    'user',             // Kamera aktif saat ini ('user' untuk depan, 'environment' untuk belakang)
 };
 
+// Menentukan domain basis API server secara dinamis sesuai lokasi window dimuat
 const API = window.location.origin;
 
-// ════════════════════════════════════════════════════════
-// SPLASH
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 2. LAYAR SAMBUTAN (SPLASH SCREEN LOGIC)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function enterApp() {
+  /**
+   * Menyembunyikan layar splash dan memicu pemuatan data utama.
+   * Dipanggil saat pengguna menekan tombol "MULAI SEKARANG" di mobile.
+   */
   document.getElementById('page-splash').classList.add('hidden');
   loadAllData();
 }
 
-// Auto-advance on desktop after 2s
+// Lewati splash screen secara otomatis setelah 2 detik pada tampilan desktop (layar >= 900px)
 setTimeout(() => {
   if (window.innerWidth >= 900) {
-    document.getElementById('page-splash').classList.add('hidden');
+    const splash = document.getElementById('page-splash');
+    if (splash) splash.classList.add('hidden');
     loadAllData();
   }
 }, 2000);
 
-// ════════════════════════════════════════════════════════
-// NAVIGATION
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 3. NAVIGASI HALAMAN (SINGLE PAGE APPLICATION ROUTING)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function navigate(page) {
+  /**
+   * Mengatur perpindahan tab/halaman secara dinamis tanpa me-reload browser.
+   * 
+   * @param {string} page - Nama ID halaman target (misal: 'home', 'umkm', 'gallery').
+   */
+  // Menghapus kelas aktif pada semua elemen container halaman
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Menyesuaikan sorotan menu aktif di navigasi sidebar desktop dan bottom-nav mobile
   document.querySelectorAll('.nav-link, .bnav-item').forEach(l => {
     l.classList.toggle('active', l.dataset.page === page);
   });
+  // Mengaktifkan container halaman target dan mereset scrollbar-nya ke paling atas
   const el = document.getElementById(`page-${page}`);
   if (el) { el.classList.add('active'); el.scrollTop = 0; }
   S.page = page;
+  // Menutup sidebar jika sedang dalam mode mobile setelah menu dipilih
   closeSidebar();
 
+  // Pemuatan dinamis konten galeri publik ketika halaman galeri dikunjungi
   if (page === 'gallery') loadGallery();
 }
 
-// ════════════════════════════════════════════════════════
-// SIDEBAR
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 4. PENGENDALI MENU SAMPING (SIDEBAR DRAWER CONTROLS)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function openSidebar() {
+  /**
+   * Membuka menu laci samping (sidebar) pada antarmuka mobile.
+   */
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('show');
 }
+
 function closeSidebar() {
+  /**
+   * Menutup menu laci samping (sidebar) dan menyembunyikan lapisan overlay-nya.
+   */
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
-// ════════════════════════════════════════════════════════
-// LOGO FALLBACK
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 5. PENANGANAN LOGO CADANGAN (LOGO ERROR FALLBACK)
+// ════════════════════════════════════════════════════════════════════════════════════
+// Jika aset berkas logo.png rusak/gagal dimuat, string SVG inline di bawah ini digunakan sebagai logo cadangan.
 const SVG_LOGO = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70">
     <text x="8" y="52" font-family="Georgia,serif" font-size="44" font-weight="900" fill="#C4973A">Tanjak</text>
@@ -1657,19 +1685,28 @@ const SVG_LOGO = `data:image/svg+xml,${encodeURIComponent(
   </svg>`
 )}`;
 
+// Mendaftarkan event onerror pada semua elemen gambar logo agar beralih ke SVG cadangan jika rusak
 ['splash-logo-img','sidebar-logo','topbar-logo'].forEach(id => {
   const el = document.getElementById(id);
   if (el) { el.onerror = () => el.src = SVG_LOGO; }
 });
 
-// ════════════════════════════════════════════════════════
-// LOAD ALL DATA
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 6. FUNGSI PEMUATAN DATA AJAX (REST API FETCH CALLS)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 async function loadAllData() {
+  /**
+   * Memicu pemuatan paralel seluruh data utama aplikasi secara asinkronus.
+   */
   await Promise.all([loadTanjak(), loadEducation(), loadUMKM(), loadStats()]);
 }
 
 async function loadTanjak() {
+  /**
+   * Mengambil data katalog tanjak dari REST API publik server.
+   * Jika server mati/offline, akan otomatis menggunakan data lokal fallbackTanjak().
+   */
   try {
     const r = await fetch(`${API}/api/tanjak`);
     const d = await r.json();
@@ -1678,10 +1715,18 @@ async function loadTanjak() {
       renderHomeTanjak();
       renderTanjakSelector();
     }
-  } catch(e) { S.tanjakData = fallbackTanjak(); renderHomeTanjak(); renderTanjakSelector(); }
+  } catch(e) { 
+    S.tanjakData = fallbackTanjak(); 
+    renderHomeTanjak(); 
+    renderTanjakSelector(); 
+  }
 }
 
 async function loadEducation() {
+  /**
+   * Mengambil artikel edukasi kebudayaan dari REST API.
+   * Beralih ke data fallback lokal jika koneksi backend gagal.
+   */
   try {
     const r = await fetch(`${API}/api/education`);
     const d = await r.json();
@@ -1690,6 +1735,10 @@ async function loadEducation() {
 }
 
 async function loadUMKM() {
+  /**
+   * Mengambil daftar profil pengrajin dari REST API.
+   * Beralih ke data fallback lokal jika terjadi kendala jaringan.
+   */
   try {
     const r = await fetch(`${API}/api/umkm`);
     const d = await r.json();
@@ -1698,6 +1747,9 @@ async function loadUMKM() {
 }
 
 async function loadStats() {
+  /**
+   * Mengambil statistik akumulatif platform (total tryon & galeri) untuk diisi pada label dashboard.
+   */
   try {
     const r = await fetch(`${API}/api/stats`);
     const d = await r.json();
@@ -1714,6 +1766,9 @@ async function loadStats() {
 }
 
 async function loadGallery() {
+  /**
+   * Mengambil foto-foto publik hasil fitting dari REST API galeri.
+   */
   try {
     const r = await fetch(`${API}/api/gallery`);
     const d = await r.json();
@@ -1721,13 +1776,18 @@ async function loadGallery() {
   } catch(e) { renderGallery([]); }
 }
 
-// ════════════════════════════════════════════════════════
-// RENDER HELPERS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 7. FUNGSI MERENDER UI DARI DATA STATE (DOM RENDERING HELPERS)
+// ════════════════════════════════════════════════════════════════════════════════════
+// Peta emoji ikon visual untuk tombol tanjak fallback
 const ICONS = { tanjak_lipatan:'🎩', tanjak_dondang:'👑', tanjak_nobat:'🏺' };
+// Pemformat angka mata uang rupiah sesuai standar regional Indonesia
 const fmt = p => `Rp ${Number(p).toLocaleString('id-ID')}`;
 
 function renderHomeTanjak() {
+  /**
+   * Membuat elemen kartu (cards) katalog produk tanjak pada halaman beranda utama.
+   */
   const el = document.getElementById('home-tanjak-grid');
   if (!el || !S.tanjakData.length) return;
   el.innerHTML = S.tanjakData.map(t => `
@@ -1745,6 +1805,9 @@ function renderHomeTanjak() {
 }
 
 function renderTanjakSelector() {
+  /**
+   * Merender daftar tombol pilihan cepat tanjak berbentuk melingkar di atas viewport kamera/tryon.
+   */
   const el = document.getElementById('tanjak-selector');
   if (!el || !S.tanjakData.length) return;
   el.innerHTML = S.tanjakData.map(t => `
@@ -1755,6 +1818,9 @@ function renderTanjakSelector() {
 }
 
 function renderEdu() {
+  /**
+   * Merender daftar artikel edukasi kebudayaan pada halaman beranda dan halaman edukasi penuh.
+   */
   const h = document.getElementById('home-edu-cards');
   const f = document.getElementById('edu-full-cards');
   const html = S.eduData.map(e => `
@@ -1771,6 +1837,11 @@ function renderEdu() {
 }
 
 function showEduDetail(id) {
+  /**
+   * Membuka dan menampilkan rincian detail isi artikel edukasi saat sebuah kartu edukasi di-klik.
+   * 
+   * @param {number} id - ID unik dari materi edukasi yang dipilih.
+   */
   const e = S.eduData.find(x => x.id === id);
   if (!e) return;
   navigate('education');
@@ -1783,6 +1854,9 @@ function showEduDetail(id) {
 }
 
 function renderUMKM() {
+  /**
+   * Merender daftar profil pengrajin UMKM di beranda (2 item) dan di tab UMKM penuh.
+   */
   const h = document.getElementById('home-umkm-mini');
   const f = document.getElementById('umkm-full-cards');
   const cardHtml = u => `
@@ -1812,6 +1886,11 @@ function renderUMKM() {
 }
 
 function renderGallery(data) {
+  /**
+   * Merender foto publik hasil tryon para pengguna pada grid galeri.
+   * 
+   * @param {Array} data - Array data riwayat galeri.
+   */
   const el = document.getElementById('gallery-grid');
   if (!el) return;
   if (!data.length) {
@@ -1829,32 +1908,50 @@ function renderGallery(data) {
     </div>`).join('');
 }
 
-// ════════════════════════════════════════════════════════
-// TANJAK SELECTION
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 8. PENGATUR TERPILIH TANJAK (TANJAK SELECTION)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function selectTanjak(id, el) {
+  /**
+   * Mengatur pemilihan tanjak saat di-klik oleh pengguna, 
+   * memperbarui status CSS visual agar sinkron di seluruh komponen selector.
+   * 
+   * @param {string} id - ID tanjak yang dipilih.
+   */
   S.tanjak = id;
   document.querySelectorAll('.tanjak-card').forEach(c => c.classList.toggle('selected', c.dataset.id === id));
   document.querySelectorAll('.ts-thumb').forEach(c => c.classList.toggle('active', c.dataset.id === id));
 }
 
-// ════════════════════════════════════════════════════════
-// FILE UPLOAD
-// ════════════════════════════════════════════════════════
-function triggerUpload() { document.getElementById('file-input').click(); }
+// ════════════════════════════════════════════════════════════════════════════════════
+// 9. PEMILIHAN DAN UNGGAH FILE FOTO (FILE UPLOAD FLOW)
+// ════════════════════════════════════════════════════════════════════════════════════
 
+function triggerUpload() {
+  /**
+   * Membuka dialog pemilihan file lokal komputer secara programmatis.
+   */
+  document.getElementById('file-input').click();
+}
+
+// Event handler ketika pengguna telah berhasil memilih berkas foto lokal
 document.getElementById('file-input').addEventListener('change', function(e) {
   const f = e.target.files[0];
   if (!f) return;
+  // Validasi tipe file agar hanya menerima berkas citra/gambar
   if (!f.type.startsWith('image/')) { toast('Hanya file gambar yang diizinkan', 'err'); return; }
+  // Batasi ukuran upload maksimal 15MB untuk mencegah timeout server
   if (f.size > 15 * 1024 * 1024) { toast('File terlalu besar (maks 15MB)', 'err'); return; }
 
   const reader = new FileReader();
   reader.onload = ev => {
+    // Menyimpan string representasi Base64 untuk payload pengiriman ke server
     S.uploadedB64 = ev.target.result;
     const img = document.getElementById('tryon-img');
     img.src = S.uploadedB64;
     img.style.display = 'block';
+    // Menghias tampilan viewport: sembunyikan instruksi kosong, tampilkan tombol pemroses
     document.getElementById('viewport-empty').style.display = 'none';
     document.getElementById('vp-controls').style.display = 'flex';
     document.getElementById('btn-process').disabled = false;
@@ -1863,42 +1960,61 @@ document.getElementById('file-input').addEventListener('change', function(e) {
     toast('Foto berhasil diunggah!', 'ok');
   };
   reader.readAsDataURL(f);
-  this.value = '';
+  this.value = ''; // Reset nilai input agar berkas yang sama dapat diunggah ulang
 });
 
-// Drag & drop
+// ── Penanganan Operasi Seret & Lepas Berkas (Drag & Drop) ──
 const viewport = document.getElementById('tryon-viewport');
-viewport.addEventListener('dragover', e => { e.preventDefault(); viewport.style.borderColor = 'var(--c-gold)'; });
-viewport.addEventListener('dragleave', () => { viewport.style.borderColor = ''; });
+viewport.addEventListener('dragover', e => {
+  e.preventDefault();
+  viewport.style.borderColor = 'var(--c-gold)'; // Tampilkan highlight warna emas
+});
+viewport.addEventListener('dragleave', () => {
+  viewport.style.borderColor = ''; // Kembalikan border standard
+});
 viewport.addEventListener('drop', e => {
-  e.preventDefault(); viewport.style.borderColor = '';
+  e.preventDefault();
+  viewport.style.borderColor = '';
   const f = e.dataTransfer.files[0];
-  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('file-input').files = dt.files; document.getElementById('file-input').dispatchEvent(new Event('change')); }
+  if (f) {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    document.getElementById('file-input').files = dt.files;
+    document.getElementById('file-input').dispatchEvent(new Event('change'));
+  }
 });
 
-// ════════════════════════════════════════════════════════
-// WEBCAM / KAMERA INTEGRATION (ADDED)
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 10. INTEGRASI WEBCAM AKTIF (WEBCAM / CAMERA INTEGRATION)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 async function openCamera() {
-  closeCamera(); // Pastikan stream sebelumnya dihentikan
+  /**
+   * Menginisialisasi aliran video (video stream) dari kamera webcam perangkat pengguna
+   * dan menampilkannya di dalam jendela modal pop-up kamera.
+   */
+  closeCamera(); // Pastikan tidak ada stream menggantung sebelumnya
   const modal = document.getElementById('camera-modal');
   modal.style.display = 'flex';
   
   const video = document.getElementById('webcam-video');
+  // Menampilkan efek cermin jika menggunakan kamera depan demi kenyamanan visual pengguna
   video.style.transform = S.facingMode === 'user' ? 'scaleX(-1)' : 'none';
 
-  // Cek jumlah kamera video untuk tombol switch cam
+  // Mendeteksi jumlah kamera video input fisik pada perangkat
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(d => d.kind === 'videoinput');
     const switchBtn = document.getElementById('btn-switch-cam');
     if (switchBtn) {
+      // Tombol ganti kamera hanya ditampilkan jika ada lebih dari 1 kamera terdeteksi (seperti di HP)
       switchBtn.style.display = videoDevices.length > 1 ? 'flex' : 'none';
     }
   } catch (e) {
     console.warn("Gagal mendeteksi input video tambahan", e);
   }
 
+  // Mengatur resolusi optimal kamera depan/belakang tanpa audio
   const constraints = {
     video: {
       facingMode: S.facingMode,
@@ -1922,10 +2038,14 @@ async function openCamera() {
 }
 
 function closeCamera() {
+  /**
+   * Menghentikan seluruh proses perekaman sensor kamera dan menyembunyikan modal.
+   */
   const modal = document.getElementById('camera-modal');
   if (modal) modal.style.display = 'none';
 
   if (S.cameraStream) {
+    // Mematikan sensor hardware kamera satu per satu (sangat krusial demi privasi pengguna)
     S.cameraStream.getTracks().forEach(track => track.stop());
     S.cameraStream = null;
   }
@@ -1935,11 +2055,18 @@ function closeCamera() {
 }
 
 function switchCamera() {
+  /**
+   * Beralih secara dinamis antara kamera depan (selfie) dan kamera belakang.
+   */
   S.facingMode = S.facingMode === 'user' ? 'environment' : 'user';
   openCamera();
 }
 
 function takePhoto() {
+  /**
+   * Menangkap frame video aktif kamera pada elemen <canvas>, menggambarnya,
+   * mengubahnya ke string Base64 JPG berkualitas tinggi, lalu memicu proses AI otomatis.
+   */
   const video = document.getElementById('webcam-video');
   const canvas = document.getElementById('tryon-canvas');
   if (!video || !canvas || !S.cameraStream) return;
@@ -1951,7 +2078,7 @@ function takePhoto() {
 
   const ctx = canvas.getContext('2d');
 
-  // Gambar dengan rotasi cermin jika kamera depan (user)
+  // Menggambar canvas secara horizontal terbalik (flip) jika menggunakan kamera depan (efek cermin)
   if (S.facingMode === 'user') {
     ctx.translate(width, 0);
     ctx.scale(-1, 1);
@@ -1959,19 +2086,19 @@ function takePhoto() {
 
   ctx.drawImage(video, 0, 0, width, height);
 
-  // Kembalikan transformasi normal
+  // Mengembalikan koordinat canvas ke normal untuk pemrosesan gambar berikutnya
   if (S.facingMode === 'user') {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
-  // Ambil data Base64 jpeg berkualitas tinggi
+  // Mengonversi data piksel canvas ke format gambar jpeg terkompresi kualitas 95%
   const base64Img = canvas.toDataURL('image/jpeg', 0.95);
   S.uploadedB64 = base64Img;
 
-  // Hentikan stream kamera
+  // Tutup hardware kamera karena penangkapan frame selesai
   closeCamera();
 
-  // Update pratinjau di viewport
+  // Memasang hasil capture pada pratinjau viewport HTML
   const img = document.getElementById('tryon-img');
   if (img) {
     img.src = base64Img;
@@ -1993,15 +2120,21 @@ function takePhoto() {
   showChip('Foto siap!', 'ok');
   toast('Foto berhasil diambil dari kamera!', 'ok');
 
-  // Jalankan fungsi otomatis (auto-submit) ke endpoint /api/tryon
+  // Menjalankan eksekusi submit ke server secara instan setelah foto ditangkap
   processImage();
 }
 
-// ════════════════════════════════════════════════════════
-// PROCESS IMAGE
-// ════════════════════════════════════════════════════════
-// == Face direction error modal ==
+// ════════════════════════════════════════════════════════════════════════════════════
+// 11. PIPELINE PEMROSESAN CITRA AI (AI TRY-ON FORM SUBMISSION)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function showFaceDirectionError(msg) {
+  /**
+   * Menampilkan jendela dialog modal kesalahan yang informatif
+   * ketika foto pengguna ditolak oleh modul validasi arah wajah AI server.
+   * 
+   * @param {string} msg - Pesan alasan penolakan dari API backend.
+   */
   var existing = document.getElementById("face-err-modal");
   if (existing) existing.remove();
 
@@ -2069,12 +2202,13 @@ function showFaceDirectionError(msg) {
   modal.innerHTML = h;
   document.body.appendChild(modal);
   document.getElementById("face-err-msg").textContent = msg;
+  // Buka dialog upload jika tombol "Ganti Foto" ditekan
   document.getElementById("face-err-change").onclick = function() { modal.remove(); triggerUpload(); };
   document.getElementById("face-err-close").onclick  = function() { modal.remove(); };
   modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 }
 
-// == Loading step animation ==
+// ── Animasi Keterangan Tahapan Proses AI Server (UX/UI Enhancements) ──
 var _LOAD_STEPS = [
   'Sedang memproses wajah...',
   'Mendeteksi wajah...',
@@ -2086,6 +2220,9 @@ var _LOAD_STEPS = [
 var _loadStepIv = null;
 
 function startLoadingSteps() {
+  /**
+   * Menjalankan siklus perubahan teks tahapan pemrosesan AI di UI setiap 1 detik.
+   */
   var i = 0;
   var el = document.getElementById('loading-sub');
   if (!el) return;
@@ -2098,13 +2235,19 @@ function startLoadingSteps() {
 }
 
 function stopLoadingSteps() {
+  /**
+   * Menghentikan animasi teks tahapan pemrosesan AI.
+   */
   clearInterval(_loadStepIv);
   var el = document.getElementById('loading-sub');
   if (el) el.textContent = 'AI sedang bekerja...';
 }
 
-// == Process image ==
 async function processImage() {
+  /**
+   * Mengirimkan gambar potret pengguna dan jenis tanjak terpilih ke endpoint API `/api/tryon`.
+   * Menampilkan efek animasi layar pemuatan (loading mask) selama pemrosesan berlangsung.
+   */
   if (!S.uploadedB64 || S.isProcessing) return;
   S.isProcessing = true;
   var lo = document.getElementById('loading');
@@ -2127,6 +2270,7 @@ async function processImage() {
       showChip('Berhasil!', 'ok');
     } else {
       var msg = data.message || 'Gagal memproses';
+      // Deteksi apakah kegagalan disebabkan penolakan validasi kemiringan/arah wajah
       var isFaceDir = (msg.indexOf('menghadap') >= 0 || msg.indexOf('miring') >= 0 ||
                        msg.indexOf('ke kiri') >= 0 || msg.indexOf('ke kanan') >= 0);
       if (isFaceDir) {
@@ -2149,6 +2293,12 @@ async function processImage() {
 }
 
 function showResult(data) {
+  /**
+   * Mengisi elemen-elemen DOM pada halaman hasil fitting (Result Page) dengan data respons API
+   * lalu berpindah navigasi ke halaman 'result'.
+   * 
+   * @param {Object} data - Objek sukses respons API virtual try-on.
+   */
   document.getElementById('result-img').src = data.result_image;
   document.getElementById('result-badge-name').textContent = data.tanjak_info.name;
   document.getElementById('result-subtitle').textContent = data.tanjak_info.name + ' berhasil dipasang!';
@@ -2168,10 +2318,14 @@ function showResult(data) {
   navigate('result');
 }
 
-// ════════════════════════════════════════════════════════
-// DOWNLOAD & GALLERY
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 12. PENGUNDUHAN & BERBAGI FOTO (DOWNLOAD & SHARE TO GALLERY)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function downloadResult() {
+  /**
+   * Memicu proses download lokal gambar hasil try-on yang bertumpuk tanjak ke browser client.
+   */
   if (!S.resultData?.result_image) return;
   const a = document.createElement('a');
   a.href = S.resultData.result_image;
@@ -2181,6 +2335,9 @@ function downloadResult() {
 }
 
 async function saveToGallery() {
+  /**
+   * Mengirimkan request ke REST API galeri untuk membagikan/menyimpan foto tryon ke galeri umum.
+   */
   if (!S.resultData) return;
   try {
     await fetch(`${API}/api/gallery/save`, {
@@ -2193,28 +2350,47 @@ async function saveToGallery() {
       })
     });
     toast('Foto dibagikan ke galeri!', 'ok');
-    loadStats();
+    loadStats(); // Memperbarui angka statistik pada dashboard platform
   } catch(e) { toast('Gagal membagikan foto', 'err'); }
 }
 
-// ════════════════════════════════════════════════════════
-// WHATSAPP
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 13. LAYANAN KONEKSI WHATSAPP PENGRAJIN (WHATSAPP REDIRECT)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 function openWA(number, name) {
+  /**
+   * Mengarahkan tab browser pengguna ke aplikasi chat WhatsApp Web / Mobile
+   * untuk menghubungi pengrajin dengan draf pesan otomatis.
+   * 
+   * @param {string} number - Nomor kontak whatsapp terdaftar.
+   * @param {string} name - Nama pengrajin.
+   */
   if (!number) { toast('Nomor WA tidak tersedia', 'err'); return; }
   const msg = encodeURIComponent(`Halo ${name}, saya tertarik membeli tanjak dari TanjakSyn. Boleh saya tanya lebih lanjut?`);
   window.open(`https://wa.me/${number}?text=${msg}`, '_blank');
 }
+
 function contactWA() {
+  /**
+   * Shortcut untuk menghubungi whatsapp pembuat tanjak yang sedang dipakai di hasil tryon.
+   */
   if (!S.resultData?.tanjak_info) return;
   openWA(S.resultData.tanjak_info.artisan_wa, S.resultData.tanjak_info.artisan);
 }
 
-// ════════════════════════════════════════════════════════
-// UI HELPERS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════
+// 14. KOMPONEN NOTIFIKASI INFORMASI (TOAST & STATUS CHIPS)
+// ════════════════════════════════════════════════════════════════════════════════════
 let _chipT;
+
 function showChip(text, type) {
+  /**
+   * Menampilkan bar status kecil (floating chip) di bagian bawah area try-on viewport.
+   * 
+   * @param {string} text - Kalimat informasi status.
+   * @param {string} type - Tipe kelas warna ('ok', 'err', atau 'processing').
+   */
   const chip = document.getElementById('det-chip');
   const dot  = document.getElementById('chip-dot');
   const txt  = document.getElementById('chip-text');
@@ -2222,11 +2398,19 @@ function showChip(text, type) {
   txt.textContent = text;
   dot.className = 'chip-dot' + (type==='ok'?' ok' : type==='err'?' err' : '');
   clearTimeout(_chipT);
+  // Hilang otomatis setelah 3.5 detik jika bukan tipe processing
   if (type === 'ok' || type === 'err') _chipT = setTimeout(() => chip.classList.remove('show'), 3500);
 }
 
 let _toastT;
+
 function toast(msg, type='') {
+  /**
+   * Menampilkan balon notifikasi flash (toast) melayang di sudut layar.
+   * 
+   * @param {string} msg - Isi pesan.
+   * @param {string} type - Jenis styling toast ('ok' atau 'err').
+   */
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = `toast show ${type}`;
@@ -2234,36 +2418,48 @@ function toast(msg, type='') {
   _toastT = setTimeout(() => el.classList.remove('show'), 3800);
 }
 
-// ════════════════════════════════════════════════════════
-// FALLBACKS (when backend offline)
-// ════════════════════════════════════════════════════════
-function fallbackTanjak() { return [
-  {id:'tanjak_lipatan',name:'Tanjak Lipatan',file:'tanjak_lipatan.png',asset_available:false,origin:'Riau',price:50000,philosophy:'Simbol Keberanian dan Kepemimpinan',artisan:'Pak Hamdan',artisan_wa:'6281234567890'},
-  {id:'tanjak_dondang',name:'Tanjak Dondang',file:'tanjak_dondang.png',asset_available:false,origin:'Kepri',price:75000,philosophy:'Simbol Kesucian dan Ketulusan Hati',artisan:'Bu Fatimah',artisan_wa:'6289876543210'},
-  {id:'tanjak_nobat',  name:'Tanjak Nobat',  file:'tanjak_nobat.png',  asset_available:false,origin:'Johor-Melayu',price:100000,philosophy:'Simbol Kemuliaan dan Kehormatan',artisan:'Pak Ismail',artisan_wa:'6285551234567'},
-];}
-function fallbackEdu() { return [
-  {id:1,title:'Dua Cara Memasang Tanjak',subtitle:'Tradisi Yonder & Padinuk',icon:'🎓',category:'teknik',content:'Tanjak dapat dipasang dengan dua metode berbeda yang mencerminkan status pemakainya.'},
-  {id:2,title:'Makna Warna & Motif',subtitle:'Kode Tersembunyi dalam Kain',icon:'🌈',category:'filosofi',content:'Setiap warna tanjak memiliki makna mendalam dalam tradisi Melayu.'},
-  {id:3,title:'Sejarah Kesultanan Melayu',subtitle:'Warisan 7 Abad Budaya',icon:'🏛️',category:'sejarah',content:'Tanjak telah digunakan sejak abad ke-15 dalam Kesultanan Malaka.'},
-  {id:4,title:'Tanjak di Era Modern',subtitle:'Melestarikan Identitas',icon:'✨',category:'modern',content:'Tanjak kini hadir dalam berbagai acara modern sebagai simbol kebanggaan Melayu.'},
-];}
-function fallbackUMKM() { return [
-  {id:1,artisan:'Pak Hamdan',location:'Pekanbaru, Riau',whatsapp:'6281234567890',description:'Pengrajin tanjak generasi ke-3 dengan pengalaman 25 tahun.',rating:4.9,total_sold:127,tanjak_price:50000},
-  {id:2,artisan:'Bu Fatimah',location:'Tanjungpinang, Kepri',whatsapp:'6289876543210',description:'Maestro tanjak wanita pertama di Kepulauan Riau.',rating:4.8,total_sold:89,tanjak_price:75000},
-  {id:3,artisan:'Pak Ismail',location:'Batam, Kepri',whatsapp:'6285551234567',description:'Pemenang penghargaan Pengrajin Terbaik Nasional 2023.',rating:5.0,total_sold:45,tanjak_price:100000},
-];}
+// ════════════════════════════════════════════════════════════════════════════════════
+// 15. STRATEGI DATA CADANGAN OFFLINE (OFFLINE FALLBACK DATA STUB)
+// ════════════════════════════════════════════════════════════════════════════════════
+// Rangkaian fungsi ini menyediakan data tiruan berkualitas tinggi jika platform tidak terhubung ke API backend.
 
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
+function fallbackTanjak() { 
+  return [
+    {id:'tanjak_lipatan',name:'Tanjak Lipatan',file:'tanjak_lipatan.png',asset_available:false,origin:'Riau',price:50000,philosophy:'Simbol Keberanian dan Kepemimpinan',artisan:'Pak Hamdan',artisan_wa:'6281234567890'},
+    {id:'tanjak_dondang',name:'Tanjak Dondang',file:'tanjak_dondang.png',asset_available:false,origin:'Kepri',price:75000,philosophy:'Simbol Kesucian dan Ketulusan Hati',artisan:'Bu Fatimah',artisan_wa:'6289876543210'},
+    {id:'tanjak_nobat',  name:'Tanjak Nobat',  file:'tanjak_nobat.png',  asset_available:false,origin:'Johor-Melayu',price:100000,philosophy:'Simbol Kemuliaan dan Kehormatan',artisan:'Pak Ismail',artisan_wa:'6285551234567'},
+  ];
+}
+
+function fallbackEdu() { 
+  return [
+    {id:1,title:'Dua Cara Memasang Tanjak',subtitle:'Tradisi Yonder & Padinuk',icon:'🎓',category:'teknik',content:'Tanjak dapat dipasang dengan dua metode berbeda yang mencerminkan status pemakainya.'},
+    {id:2,title:'Makna Warna & Motif',subtitle:'Kode Tersembunyi dalam Kain',icon:'🌈',category:'filosofi',content:'Setiap warna tanjak memiliki makna mendalam dalam tradisi Melayu.'},
+    {id:3,title:'Sejarah Kesultanan Melayu',subtitle:'Warisan 7 Abad Budaya',icon:'🏛️',category:'sejarah',content:'Tanjak telah digunakan sejak abad ke-15 dalam Kesultanan Malaka.'},
+    {id:4,title:'Tanjak di Era Modern',subtitle:'Melestarikan Identitas',icon:'✨',category:'modern',content:'Tanjak kini hadir dalam berbagai acara modern sebagai simbol kebanggaan Melayu.'},
+  ];
+}
+
+function fallbackUMKM() { 
+  return [
+    {id:1,artisan:'Pak Hamdan',location:'Pekanbaru, Riau',whatsapp:'6281234567890',description:'Pengrajin tanjak generasi ke-3 dengan pengalaman 25 tahun.',rating:4.9,total_sold:127,tanjak_price:50000},
+    {id:2,artisan:'Bu Fatimah',location:'Tanjungpinang, Kepri',whatsapp:'6289876543210',description:'Maestro tanjak wanita pertama di Kepulauan Riau.',rating:4.8,total_sold:89,tanjak_price:75000},
+    {id:3,artisan:'Pak Ismail',location:'Batam, Kepri',whatsapp:'6285551234567',description:'Pemenang penghargaan Pengrajin Terbaik Nasional 2023.',rating:5.0,total_sold:45,tanjak_price:100000},
+  ];
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════
+// 16. INISIALISASI PEMUATAN HALAMAN (PAGE STARTUP INITIALIZATION)
+// ════════════════════════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', () => {
-  // On desktop, skip splash and load data
+  // Jika perangkat berupa komputer/desktop (lebar layar >= 900px), langsung lewati splash screen
   if (window.innerWidth >= 900) {
-    document.getElementById('page-splash').style.display = 'none';
+    const splash = document.getElementById('page-splash');
+    if (splash) splash.style.display = 'none';
     loadAllData();
   }
-  // On mobile, wait for user to click enter
+  // Pada tampilan mobile/HP, aplikasi menunggu pengguna mengetuk tombol "Mulai" secara manual
 });
 </script>
 </body>
