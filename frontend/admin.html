@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TanjakSyn v2 – Panel Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ════════════════════════════════════════════════════════
+       DESIGN SYSTEM (Matching TanjakSyn Heritage Theme)
+       ════════════════════════════════════════════════════════ */
+    :root {
+      --c-maroon: #5C0A1A;
+      --c-maroon-d: #380610;
+      --c-maroon-dd: #200308;
+      --c-maroon-l: #7A1428;
+      --c-maroon-xl: #A02040;
+      --c-gold: #C4973A;
+      --c-gold-l: #DDB85C;
+      --c-gold-xl: #F0D080;
+      --c-gold-d: #8A6018;
+      --c-gold-dd: #5A3A08;
+      --c-cream: #FBF4E4;
+      --c-cream-d: #F0E4C8;
+      --c-ink: #1A0808;
+      --c-text: #2C1008;
+      --c-muted: #7A5840;
+      --c-white: #FFFDF8;
+
+      --font-display: 'Cinzel Decorative', serif;
+      --font-heading: 'Cinzel', serif;
+      --font-body: 'EB Garamond', serif;
+      --font-sans: 'Outfit', sans-serif;
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --bounce: cubic-bezier(.34, 1.56, .64, 1);
+      --r-md: 12px;
+      --r-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--c-maroon-dd);
+      color: var(--c-cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Pattern Background */
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      background-image: repeating-linear-gradient(45deg, rgba(196, 151, 58, .02) 0, rgba(196, 151, 58, .02) 1px,
+          transparent 0, transparent 40px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       LOGIN GUARD
+       ════════════════════════════════════════════════════════ */
+    #login-guard {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      background: radial-gradient(circle at center, var(--c-maroon) 0%, var(--c-maroon-dd) 100%);
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    #login-guard.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-card {
+      background: rgba(32, 3, 8, 0.75);
+      border: 1px solid rgba(196, 151, 58, 0.25);
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(196, 151, 58, 0.1);
+      text-align: center;
+      animation: cardEnter 0.6s var(--bounce);
+      position: relative;
+    }
+
+    @keyframes cardEnter {
+      from {
+        transform: translateY(40px) scale(0.95);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .login-header h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--c-gold-xl);
+      margin-bottom: 8px;
+    }
+
+    .login-header p {
+      font-family: var(--font-body);
+      font-style: italic;
+      color: rgba(240, 208, 128, 0.6);
+      font-size: 15px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--c-gold-l);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(196, 151, 58, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--c-white);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .form-control:focus {
+      border-color: var(--c-gold-l);
+      box-shadow: 0 0 10px rgba(196, 151, 58, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(135deg, var(--c-gold), var(--c-gold-d));
+      color: var(--c-maroon-dd);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 2px;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s var(--bounce);
+      box-shadow: 0 8px 24px rgba(196, 151, 58, 0.2);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(196, 151, 58, 0.4);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       DASHBOARD LAYOUT
+       ════════════════════════════════════════════════════════ */
+    #dashboard-layout {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #dashboard-layout.visible {
+      opacity: 1;
+    }
+
+    /* Header */
+    header {
+      background: rgba(56, 6, 16, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(196, 151, 58, 0.15);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-wrap h1 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--c-gold-l);
+    }
+
+    .brand-wrap p {
+      font-family: var(--font-body);
+      font-style: italic;
+      color: rgba(240, 208, 128, 0.6);
+      font-size: 13px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .badge-admin {
+      background: rgba(196, 151, 58, 0.15);
+      border: 1px solid rgba(196, 151, 58, 0.3);
+      color: var(--c-gold-xl);
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-family: var(--font-heading);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+
+    /* Main Area */
+    main {
+      flex: 1;
+      padding: 40px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 30px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: rgba(240, 208, 128, 0.5);
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tab-btn:hover {
+      color: var(--c-gold-l);
+    }
+
+    .tab-btn.active {
+      color: var(--c-gold-xl);
+      border-color: var(--c-gold);
+    }
+
+    .tab-content {
+      display: none;
+      animation: tabFade 0.4s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes tabFade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Dashboard Actions */
+    .section-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 20px;
+    }
+
+    .search-box {
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .btn-add {
+      background: linear-gradient(135deg, var(--c-gold), var(--c-gold-d));
+      color: var(--c-maroon-dd);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s var(--bounce);
+      box-shadow: 0 4px 12px rgba(196, 151, 58, 0.15);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(196, 151, 58, 0.3);
+    }
+
+    /* Table Container */
+    .table-container {
+      background: rgba(32, 3, 8, 0.4);
+      border: 1px solid rgba(196, 151, 58, 0.12);
+      border-radius: var(--r-md);
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(56, 6, 16, 0.6);
+      font-family: var(--font-heading);
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--c-gold-l);
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(196, 151, 58, 0.15);
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.85);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(196, 151, 58, 0.03);
+    }
+
+    /* Badges & Chips */
+    .badge-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .badge-status.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-status.inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Thumbnail preview */
+    .thumb-preview {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--c-maroon-d);
+      border: 1px solid rgba(196, 151, 58, 0.3);
+    }
+
+    /* Actions buttons */
+    .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--c-cream);
+      transition: all 0.2s;
+    }
+
+    .btn-action.edit:hover {
+      background: rgba(196, 151, 58, 0.15);
+      border-color: var(--c-gold);
+      color: var(--c-gold-xl);
+    }
+
+    .btn-action.delete:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       MODALS
+       ════════════════════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: var(--c-maroon-dd);
+      border: 1px solid rgba(196, 151, 58, 0.25);
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      transform: translateY(30px);
+      transition: all 0.3s var(--bounce);
+    }
+
+    .modal-overlay.show .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      background: var(--c-maroon-d);
+      border-bottom: 1px solid rgba(196, 151, 58, 0.15);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      letter-spacing: 1.5px;
+      color: var(--c-gold-l);
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: rgba(240, 208, 128, 0.5);
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .btn-close-modal:hover {
+      color: var(--c-gold-xl);
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-grid-full {
+      grid-column: span 2;
+    }
+
+    .modal-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--c-cream);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--c-gold), var(--c-gold-d));
+      color: var(--c-maroon-dd);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+       ════════════════════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: rgba(32, 3, 8, 0.9);
+      border-left: 4px solid var(--c-gold);
+      border-right: 1px solid rgba(196, 151, 58, 0.15);
+      border-top: 1px solid rgba(196, 151, 58, 0.15);
+      border-bottom: 1px solid rgba(196, 151, 58, 0.15);
+      padding: 16px 24px;
+      border-radius: 0 8px 8px 0;
+      color: var(--c-cream);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 300px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      animation: toastSlide 0.4s var(--bounce);
+    }
+
+    .toast.success {
+      border-left-color: #22c55e;
+    }
+
+    .toast.error {
+      border-left-color: #ef4444;
+    }
+
+    @keyframes toastSlide {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-pattern"></div>
+
+  <!-- 1. LOGIN GUARD OVERLAY -->
+  <div id="login-guard">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>TANJAKSYN</h2>
+        <p>Platform Warisan Budaya & Dashboard Admin</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="Masukkan username admin" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Masukkan password" required>
+        </div>
+        <button type="submit" class="btn-login" id="btn-login-submit">MASUK DASHBOARD</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN DASHBOARD LAYOUT -->
+  <div id="dashboard-layout">
+    <header>
+      <div class="brand-wrap">
+        <h1>TanjakSyn v2 Admin</h1>
+        <p>Panel Manajemen Konten & Kemitraan UMKM</p>
+      </div>
+      <div class="user-profile">
+        <span class="badge-admin">ROLE: SUPER ADMIN</span>
+        <button class="btn-logout" id="btn-logout-action">LOGOUT</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Navigation Tabs -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="tab-tanjak-btn" onclick="switchTab('tanjak')">MANAJEMEN TANJAK</button>
+        <button class="tab-btn" id="tab-umkm-btn" onclick="switchTab('umkm')">MANAJEMEN UMKM ARTISAN</button>
+      </div>
+
+      <!-- TAB 1: TANJAK -->
+      <div id="tab-tanjak" class="tab-content active">
+        <div class="section-actions">
+          <input type="text" id="tanjak-search" class="form-control search-box"
+            placeholder="Cari tanjak berdasarkan nama..." oninput="filterTanjak()">
+          <button class="btn-add" id="btn-add-tanjak" onclick="openTanjakModal('add')">TAMBAH TANJAK BARU</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Preview</th>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>Asal</th>
+                <th>Penggunaan</th>
+                <th>Harga</th>
+                <th>Komisi</th>
+                <th>Artisan / Pembuat</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tanjak-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: UMKM -->
+      <div id="tab-umkm" class="tab-content">
+        <div class="section-actions">
+          <input type="text" id="umkm-search" class="form-control search-box"
+            placeholder="Cari artisan berdasarkan nama..." oninput="filterUmkm()">
+          <button class="btn-add" id="btn-add-umkm" onclick="openUmkmModal('add')">TAMBAH ARTISAN BARU</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Artisan</th>
+                <th>Lokasi</th>
+                <th>No Telepon</th>
+                <th>WhatsApp</th>
+                <th>Rating</th>
+                <th>Terjual</th>
+                <th>Tanjak Terkait</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="umkm-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 3. MODAL: ADD / EDIT TANJAK -->
+  <div id="tanjak-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="tanjak-modal-title">Tambah Tanjak Baru</h3>
+        <button class="btn-close-modal" onclick="closeTanjakModal()">&times;</button>
+      </div>
+      <form id="tanjak-form" onsubmit="saveTanjak(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group" id="tanjak-id-group">
+              <label for="t-id">ID Tanjak (Unique String)</label>
+              <input type="text" id="t-id" name="id" class="form-control" placeholder="Contoh: tanjak_lipatan_bugis"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="t-name">Nama Tanjak</label>
+              <input type="text" id="t-name" name="name" class="form-control" placeholder="Contoh: Tanjak Lipatan Bugis"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="t-origin">Asal Daerah</label>
+              <input type="text" id="t-origin" name="origin" class="form-control" placeholder="Contoh: Riau" required>
+            </div>
+            <div class="form-group">
+              <label for="t-usage">Penggunaan Adat</label>
+              <input type="text" id="t-usage" name="usage" class="form-control"
+                placeholder="Contoh: Pernikahan & Upacara" required>
+            </div>
+            <div class="form-group">
+              <label for="t-price">Harga (IDR)</label>
+              <input type="number" id="t-price" name="price" class="form-control" placeholder="50000" required>
+            </div>
+            <div class="form-group">
+              <label for="t-commission">Komisi Marketplace (0.0 - 1.0)</label>
+              <input type="number" step="0.01" id="t-commission" name="commission" class="form-control"
+                placeholder="0.10" required>
+            </div>
+            <div class="form-group">
+              <label for="t-scale">Skala AI Try-On (2.0 - 4.0)</label>
+              <input type="number" step="0.1" id="t-scale" name="scale" class="form-control" placeholder="2.6" required>
+            </div>
+            <div class="form-group">
+              <label for="t-voffset">Vertikal Offset AI (-1.0 s/d 1.0)</label>
+              <input type="number" step="0.01" id="t-voffset" name="v_offset" class="form-control" placeholder="0.35"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="t-artisan">Nama Pembuat (Artisan)</label>
+              <input type="text" id="t-artisan" name="artisan" class="form-control" placeholder="Pak Hamdan" required>
+            </div>
+            <div class="form-group">
+              <label for="t-artisan-wa">WhatsApp Artisan</label>
+              <input type="text" id="t-artisan-wa" name="artisan_wa" class="form-control" placeholder="6281234567890"
+                required>
+            </div>
+            <div class="form-group form-grid-full">
+              <label for="t-philosophy">Filosofi / Deskripsi Panjang</label>
+              <textarea id="t-philosophy" name="philosophy" class="form-control" rows="3"
+                placeholder="Tulis filosofi budaya dari tanjak ini..." required></textarea>
+            </div>
+            <div class="form-group form-grid-full">
+              <label for="t-image">File Gambar Tanjak (Upload .png Transparan)</label>
+              <input type="file" id="t-image" name="image" class="form-control" accept="image/png">
+              <p style="font-size: 11px; color: rgba(240, 208, 128, 0.5); margin-top: 4px;">Kosongkan jika tidak ingin
+                mengubah gambar yang sudah ada.</p>
+            </div>
+            <div class="form-group form-grid-full" id="tanjak-active-group" style="display: none;">
+              <label for="t-active">Status Keaktifan</label>
+              <select id="t-active" name="is_active" class="form-control">
+                <option value="1">Aktif & Tampilkan di Web</option>
+                <option value="0">Tidak Aktif (Soft Delete)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeTanjakModal()">Batal</button>
+          <button type="submit" class="btn-submit">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. MODAL: ADD / EDIT UMKM -->
+  <div id="umkm-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="umkm-modal-title">Tambah UMKM Artisan</h3>
+        <button class="btn-close-modal" onclick="closeUmkmModal()">&times;</button>
+      </div>
+      <form id="umkm-form" onsubmit="saveUmkm(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <input type="hidden" id="u-id" name="id">
+            <div class="form-group">
+              <label for="u-artisan">Nama Pemilik / Artisan</label>
+              <input type="text" id="u-artisan" name="artisan" class="form-control" placeholder="Contoh: Pak Ismail"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="u-location">Lokasi / Alamat</label>
+              <input type="text" id="u-location" name="location" class="form-control"
+                placeholder="Contoh: Bengkalis, Riau" required>
+            </div>
+            <div class="form-group">
+              <label for="u-phone">No. Handphone/Telepon</label>
+              <input type="text" id="u-phone" name="phone" class="form-control" placeholder="Contoh: 081234567890">
+            </div>
+            <div class="form-group">
+              <label for="u-whatsapp">WhatsApp (Gunakan kode negara: 628...)</label>
+              <input type="text" id="u-whatsapp" name="whatsapp" class="form-control"
+                placeholder="Contoh: 6281234567890" required>
+            </div>
+            <div class="form-group">
+              <label for="u-rating">Rating (0.0 - 5.0)</label>
+              <input type="number" step="0.1" min="0" max="5" id="u-rating" name="rating" class="form-control"
+                placeholder="5.0" required>
+            </div>
+            <div class="form-group">
+              <label for="u-sold">Jumlah Terjual (Total Sold)</label>
+              <input type="number" id="u-sold" name="total_sold" class="form-control" placeholder="10" required>
+            </div>
+            <div class="form-group form-grid-full">
+              <label for="u-tanjak">Tanjak Produk Unggulan</label>
+              <select id="u-tanjak" name="tanjak_id" class="form-control" required>
+                <option value="">-- Hubungkan dengan Tanjak --</option>
+              </select>
+            </div>
+            <div class="form-group form-grid-full">
+              <label for="u-description">Deskripsi UMKM / Profil Singkat</label>
+              <textarea id="u-description" name="description" class="form-control" rows="3"
+                placeholder="Tulis profil singkat usaha kerajinan..." required></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeUmkmModal()">Batal</button>
+          <button type="submit" class="btn-submit">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       JAVASCRIPT LOGIC (AJAX & UI Toggles)
+       ════════════════════════════════════════════════════════ -->
+  <script>
+    // Global Data Cache
+    let tanjakList = [];
+    let umkmList = [];
+    let currentTanjakModalMode = 'add';
+    let currentUmkmModalMode = 'add';
+
+    // Page Init
+    window.addEventListener('DOMContentLoaded', () => {
+      checkSessionStatus();
+
+      // Bind Login Form
+      document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        submitLogin();
+      });
+
+      // Bind Logout Button
+      document.getElementById('btn-logout-action').addEventListener('click', () => {
+        submitLogout();
+      });
+    });
+
+    // ── Session Check ──
+    async function checkSessionStatus() {
+      try {
+        const res = await fetch('/api/admin/check-session');
+        const data = await res.json();
+        if (data.logged_in) {
+          showDashboard();
+        } else {
+          showLogin();
+        }
+      } catch (err) {
+        showToast('Gagal memverifikasi session backend', 'error');
+        showLogin();
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('login-guard').classList.remove('hidden');
+      document.getElementById('dashboard-layout').classList.remove('visible');
+    }
+
+    function showDashboard() {
+      document.getElementById('login-guard').classList.add('hidden');
+      document.getElementById('dashboard-layout').classList.add('visible');
+      // Load tables data
+      loadAllData();
+    }
+
+    // ── Authentication API Calls ──
+    async function submitLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('Login berhasil! Selamat datang.', 'success');
+          showDashboard();
+        } else {
+          showToast(data.message || 'Username atau password salah', 'error');
+        }
+      } catch (err) {
+        showToast('Koneksi backend gagal', 'error');
+      }
+    }
+
+    async function submitLogout() {
+      try {
+        const res = await fetch('/api/admin/logout', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Logout berhasil', 'success');
+          showLogin();
+        }
+      } catch (err) {
+        showToast('Gagal melakukan logout', 'error');
+      }
+    }
+
+    // ── Tabs Switching ──
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabId === 'tanjak') {
+        document.getElementById('tab-tanjak-btn').classList.add('active');
+        document.getElementById('tab-tanjak').classList.add('active');
+      } else {
+        document.getElementById('tab-umkm-btn').classList.add('active');
+        document.getElementById('tab-umkm').classList.add('active');
+      }
+    }
+
+    // ── Load All Tables Data ──
+    async function loadAllData() {
+      await Promise.all([fetchTanjakList(), fetchUmkmList()]);
+      populateTanjakDropdown();
+    }
+
+    async function fetchTanjakList() {
+      try {
+        const res = await fetch('/api/admin/tanjak');
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        const resData = await res.json();
+        if (resData.success) {
+          tanjakList = resData.data;
+          renderTanjakTable(tanjakList);
+        }
+      } catch (err) {
+        showToast('Gagal memuat daftar Tanjak', 'error');
+      }
+    }
+
+    async function fetchUmkmList() {
+      try {
+        const res = await fetch('/api/umkm'); // public route /api/umkm is fine
+        const resData = await res.json();
+        if (resData.success) {
+          umkmList = resData.data;
+          renderUmkmTable(umkmList);
+        }
+      } catch (err) {
+        showToast('Gagal memuat daftar UMKM', 'error');
+      }
+    }
+
+    // ── Renders ──
+    function renderTanjakTable(list) {
+      const tbody = document.getElementById('tanjak-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--c-muted); font-style: italic;">Tidak ada data tanjak.</td></tr>`;
+        return;
+      }
+
+      list.forEach(t => {
+        const statusBadge = t.is_active
+          ? `<span class="badge-status active">Aktif</span>`
+          : `<span class="badge-status inactive">Nonaktif</span>`;
+
+        const previewUrl = `/api/tanjak-asset/${t.file}`;
+        const imageHtml = t.asset_available
+          ? `<img src="${previewUrl}" class="thumb-preview" alt="${t.name}">`
+          : `<div class="thumb-preview" style="display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,0.4)">No Img</div>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${imageHtml}</td>
+          <td style="font-family: monospace; font-size: 12px; color: var(--c-gold-l);">${t.id}</td>
+          <td style="font-weight: 600;">${t.name}</td>
+          <td>${t.origin}</td>
+          <td>${t.usage}</td>
+          <td>Rp ${t.price.toLocaleString('id-ID')}</td>
+          <td>${Math.round(t.commission * 100)}%</td>
+          <td>
+            <div style="font-weight: 500;">${t.artisan}</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.4);">${t.artisan_wa}</div>
+          </td>
+          <td>${statusBadge}</td>
+          <td>
+            <div class="action-group">
+              <button class="btn-action edit" onclick="openTanjakModal('edit', '${t.id}')">Edit</button>
+              <button class="btn-action delete" onclick="deleteTanjakAction('${t.id}')">Hapus</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderUmkmTable(list) {
+      const tbody = document.getElementById('umkm-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--c-muted); font-style: italic;">Tidak ada data UMKM.</td></tr>`;
+        return;
+      }
+
+      list.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: monospace; color: var(--c-gold-l);">${u.id}</td>
+          <td style="font-weight: 600;">${u.artisan}</td>
+          <td>${u.location || '-'}</td>
+          <td>${u.phone || '-'}</td>
+          <td>${u.whatsapp || '-'}</td>
+          <td style="color: var(--c-gold-l); font-weight: 600;">★ ${u.rating.toFixed(1)}</td>
+          <td>${u.total_sold} pcs</td>
+          <td style="font-size: 13px; font-style: italic;">${u.tanjak_name || '<span style="color:rgba(255,255,255,0.3)">Belum terhubung</span>'}</td>
+          <td>
+            <div class="action-group">
+              <button class="btn-action edit" onclick="openUmkmModal('edit', ${u.id})">Edit</button>
+              <button class="btn-action delete" onclick="deleteUmkmAction(${u.id})">Hapus</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function populateTanjakDropdown() {
+      const select = document.getElementById('u-tanjak');
+      select.innerHTML = '<option value="">-- Hubungkan dengan Tanjak --</option>';
+
+      tanjakList.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.name} (${t.id})`;
+        select.appendChild(opt);
+      });
+    }
+
+    // ── Search Filters ──
+    function filterTanjak() {
+      const q = document.getElementById('tanjak-search').value.toLowerCase();
+      const filtered = tanjakList.filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.origin.toLowerCase().includes(q));
+      renderTanjakTable(filtered);
+    }
+
+    function filterUmkm() {
+      const q = document.getElementById('umkm-search').value.toLowerCase();
+      const filtered = umkmList.filter(u => u.artisan.toLowerCase().includes(q) || u.location.toLowerCase().includes(q));
+      renderUmkmTable(filtered);
+    }
+
+    // ── Tanjak Modal Actions ──
+    function openTanjakModal(mode, id = '') {
+      currentTanjakModalMode = mode;
+      const form = document.getElementById('tanjak-form');
+      form.reset();
+
+      if (mode === 'add') {
+        document.getElementById('tanjak-modal-title').textContent = 'Tambah Tanjak Baru';
+        document.getElementById('tanjak-id-group').style.display = 'block';
+        document.getElementById('t-id').disabled = false;
+        document.getElementById('t-id').required = true;
+        document.getElementById('tanjak-active-group').style.display = 'none';
+      } else {
+        document.getElementById('tanjak-modal-title').textContent = 'Edit Data Tanjak';
+        document.getElementById('tanjak-id-group').style.display = 'none';
+        document.getElementById('t-id').disabled = true;
+        document.getElementById('t-id').required = false;
+        document.getElementById('tanjak-active-group').style.display = 'block';
+
+        const t = tanjakList.find(item => item.id === id);
+        if (t) {
+          document.getElementById('t-id').value = t.id;
+          document.getElementById('t-name').value = t.name;
+          document.getElementById('t-origin').value = t.origin;
+          document.getElementById('t-usage').value = t.usage;
+          document.getElementById('t-price').value = t.price;
+          document.getElementById('t-commission').value = t.commission;
+          document.getElementById('t-scale').value = t.scale;
+          document.getElementById('t-voffset').value = t.v_offset;
+          document.getElementById('t-artisan').value = t.artisan;
+          document.getElementById('t-artisan-wa').value = t.artisan_wa;
+          document.getElementById('t-philosophy').value = t.philosophy;
+          document.getElementById('t-active').value = t.is_active;
+        }
+      }
+
+      document.getElementById('tanjak-modal').classList.add('show');
+    }
+
+    function closeTanjakModal() {
+      document.getElementById('tanjak-modal').classList.remove('show');
+    }
+
+    async function saveTanjak(e) {
+      e.preventDefault();
+      const form = document.getElementById('tanjak-form');
+      const formData = new FormData(form);
+
+      let url = '/api/admin/tanjak/add';
+      if (currentTanjakModalMode === 'edit') {
+        const id = document.getElementById('t-id').value;
+        url = `/api/admin/tanjak/edit/${id}`;
+        // Since input is disabled, formData won't capture id, but endpoint does not need it in body if in route
+      }
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST', // Use POST with multipart for compatibility
+          body: formData
+        });
+        const resData = await res.json();
+
+        if (resData.success) {
+          showToast(resData.message || 'Data tanjak berhasil disimpan', 'success');
+          closeTanjakModal();
+          loadAllData();
+        } else {
+          showToast(resData.message || 'Gagal menyimpan data tanjak', 'error');
+        }
+      } catch (err) {
+        showToast('Koneksi server gagal', 'error');
+      }
+    }
+
+    async function deleteTanjakAction(id) {
+      if (!confirm('Apakah Anda yakin ingin menonaktifkan Tanjak ini? (Soft Delete)')) return;
+
+      try {
+        const res = await fetch(`/api/admin/tanjak/delete/${id}`, { method: 'DELETE' });
+        const resData = await res.json();
+
+        if (resData.success) {
+          showToast(resData.message || 'Tanjak dinonaktifkan', 'success');
+          loadAllData();
+        } else {
+          showToast(resData.message || 'Gagal menghapus tanjak', 'error');
+        }
+      } catch (err) {
+        showToast('Koneksi server gagal', 'error');
+      }
+    }
+
+    // ── UMKM Modal Actions ──
+    function openUmkmModal(mode, id = null) {
+      currentUmkmModalMode = mode;
+      const form = document.getElementById('umkm-form');
+      form.reset();
+
+      if (mode === 'add') {
+        document.getElementById('umkm-modal-title').textContent = 'Tambah UMKM Artisan Baru';
+        document.getElementById('u-id').value = '';
+      } else {
+        document.getElementById('umkm-modal-title').textContent = 'Edit Data UMKM Artisan';
+        const u = umkmList.find(item => item.id === id);
+        if (u) {
+          document.getElementById('u-id').value = u.id;
+          document.getElementById('u-artisan').value = u.artisan;
+          document.getElementById('u-location').value = u.location;
+          document.getElementById('u-phone').value = u.phone;
+          document.getElementById('u-whatsapp').value = u.whatsapp;
+          document.getElementById('u-rating').value = u.rating;
+          document.getElementById('u-sold').value = u.total_sold;
+          document.getElementById('u-tanjak').value = u.tanjak_id || '';
+          document.getElementById('u-description').value = u.description;
+        }
+      }
+
+      document.getElementById('umkm-modal').classList.add('show');
+    }
+
+    function closeUmkmModal() {
+      document.getElementById('umkm-modal').classList.remove('show');
+    }
+
+    async function saveUmkm(e) {
+      e.preventDefault();
+
+      const payload = {
+        artisan: document.getElementById('u-artisan').value,
+        location: document.getElementById('u-location').value,
+        phone: document.getElementById('u-phone').value,
+        whatsapp: document.getElementById('u-whatsapp').value,
+        rating: parseFloat(document.getElementById('u-rating').value),
+        total_sold: parseInt(document.getElementById('u-sold').value),
+        tanjak_id: document.getElementById('u-tanjak').value || null,
+        description: document.getElementById('u-description').value
+      };
+
+      let url = '/api/admin/umkm/add';
+      let method = 'POST';
+
+      if (currentUmkmModalMode === 'edit') {
+        const id = document.getElementById('u-id').value;
+        url = `/api/admin/umkm/edit/${id}`;
+        method = 'PUT';
+      }
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resData = await res.json();
+
+        if (resData.success) {
+          showToast(resData.message || 'Artisan berhasil disimpan', 'success');
+          closeUmkmModal();
+          loadAllData();
+        } else {
+          showToast(resData.message || 'Gagal menyimpan data artisan', 'error');
+        }
+      } catch (err) {
+        showToast('Koneksi server gagal', 'error');
+      }
+    }
+
+    async function deleteUmkmAction(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus data UMKM Artisan ini secara permanen?')) return;
+
+      try {
+        const res = await fetch(`/api/admin/umkm/delete/${id}`, { method: 'DELETE' });
+        const resData = await res.json();
+
+        if (resData.success) {
+          showToast(resData.message || 'Artisan berhasil dihapus', 'success');
+          loadAllData();
+        } else {
+          showToast(resData.message || 'Gagal menghapus artisan', 'error');
+        }
+      } catch (err) {
+        showToast('Koneksi server gagal', 'error');
+      }
+    }
+
+    // ── Toast Alert Helper ──
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button style="margin-left: 15px; color: inherit; border: none; background: none; font-weight: bold; cursor: pointer;" onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.4s';
+        setTimeout(() => toast.remove(), 400);
+      }, 4000);
+    }
+  </script>
+</body>
+
+</html>

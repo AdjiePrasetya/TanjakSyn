@@ -235,3 +235,64 @@ def get_stats():
     }
     conn.close()
     return stats
+
+
+# ── CRUD operations for Admin Dashboard ───────────────────
+
+def get_all_tanjak_admin():
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM tanjak ORDER BY sort_order").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def add_tanjak(tid, name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission):
+    conn = get_connection()
+    conn.execute("""
+        INSERT INTO tanjak (id, name, file, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    """, (tid, name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission))
+    conn.commit()
+    conn.close()
+
+def update_tanjak(tid, name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission, is_active=1):
+    conn = get_connection()
+    conn.execute("""
+        UPDATE tanjak
+        SET name=?, file=?, scale=?, v_offset=?, philosophy=?, origin=?, usage=?, price=?, artisan=?, artisan_wa=?, commission=?, is_active=?
+        WHERE id=?
+    """, (name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission, is_active, tid))
+    conn.commit()
+    conn.close()
+
+def delete_tanjak(tid):
+    conn = get_connection()
+    # Soft delete to prevent constraint violation on historical tryons/umkms
+    conn.execute("UPDATE tanjak SET is_active=0 WHERE id=?", (tid,))
+    conn.commit()
+    conn.close()
+
+def add_umkm(artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id):
+    conn = get_connection()
+    conn.execute("""
+        INSERT INTO umkm (artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id))
+    conn.commit()
+    conn.close()
+
+def update_umkm(umkm_id, artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id):
+    conn = get_connection()
+    conn.execute("""
+        UPDATE umkm
+        SET artisan=?, location=?, phone=?, whatsapp=?, description=?, rating=?, total_sold=?, tanjak_id=?
+        WHERE id=?
+    """, (artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id, umkm_id))
+    conn.commit()
+    conn.close()
+
+def delete_umkm(umkm_id):
+    conn = get_connection()
+    conn.execute("DELETE FROM umkm WHERE id=?", (umkm_id,))
+    conn.commit()
+    conn.close()
+

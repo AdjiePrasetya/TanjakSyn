@@ -8,8 +8,13 @@ import sys
 import uuid
 import json
 from pathlib import Path
-from flask import Flask, request, jsonify, send_from_directory, send_file
+from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_cors import CORS
+from functools import wraps
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 # ── Path setup ────────────────────────────────────────────
 BASE_DIR     = Path(__file__).parent
@@ -27,12 +32,15 @@ for d in [TANJAK_DIR, UPLOAD_DIR, OUTPUT_DIR]:
 from database.db import (
     init_db, get_all_tanjak, get_tanjak_by_id,
     get_all_education, get_all_umkm,
-    save_tryon, save_gallery, get_gallery, get_stats
+    save_tryon, save_gallery, get_gallery, get_stats,
+    get_all_tanjak_admin, add_tanjak, update_tanjak, delete_tanjak,
+    add_umkm, update_umkm, delete_umkm
 )
 from backend.ai_processor import process_tryon, bytes_to_b64
 
 # ── Flask App ─────────────────────────────────────────────
 app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "tanjaksyn-super-secret-key-12345")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # ============================================================
@@ -225,6 +233,223 @@ def tanjak_asset(filename):
     if (TANJAK_DIR / filename).exists():
         return send_from_directory(TANJAK_DIR, filename)
     return jsonify({"error": "not found"}), 404
+
+
+# ============================================================
+# ADMIN ROUTE & API ENDPOINTS
+# ============================================================
+
+# Decorator to secure admin routes
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("logged_in"):
+            return jsonify({"success": False, "message": "Unauthorized. Silakan login terlebih dahulu."}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Route to serve admin static page
+@app.route("/admin")
+def admin_page():
+    return send_from_directory(FRONTEND_DIR, "admin.html")
+
+# API: Admin Login
+@app.route("/api/admin/login", methods=["POST"])
+def api_admin_login():
+    data = request.get_json(force=True) or {}
+    username = data.get("username")
+    password = data.get("password")
+    
+    admin_user = os.environ.get("ADMIN_USERNAME", "admin")
+    admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
+    
+    if username == admin_user and password == admin_pass:
+        session["logged_in"] = True
+        return jsonify({"success": True, "message": "Login berhasil"})
+    return jsonify({"success": False, "message": "Username atau password salah"}), 401
+
+# API: Admin Logout
+@app.route("/api/admin/logout", methods=["POST"])
+def api_admin_logout():
+    session.pop("logged_in", None)
+    return jsonify({"success": True, "message": "Logout berhasil"})
+
+# API: Admin Session Check
+@app.route("/api/admin/check-session", methods=["GET"])
+def api_admin_check_session():
+    return jsonify({"success": True, "logged_in": session.get("logged_in", False)})
+
+# API: Admin Get All Tanjaks (including inactive ones)
+@app.route("/api/admin/tanjak", methods=["GET"])
+@admin_required
+def api_admin_tanjak_list():
+    data = get_all_tanjak_admin()
+    for t in data:
+        t["asset_available"] = (TANJAK_DIR / t["file"]).exists()
+    return jsonify({"success": True, "data": data})
+
+# API: Admin Add Tanjak
+@app.route("/api/admin/tanjak/add", methods=["POST"])
+@admin_required
+def api_admin_tanjak_add():
+    try:
+        if request.content_type and "multipart" in request.content_type:
+            tid = request.form.get("id")
+            name = request.form.get("name")
+            scale = float(request.form.get("scale", 2.6))
+            v_offset = float(request.form.get("v_offset", 0.35))
+            philosophy = request.form.get("philosophy", "")
+            origin = request.form.get("origin", "")
+            usage = request.form.get("usage", "")
+            price = int(request.form.get("price", 50000))
+            artisan = request.form.get("artisan", "")
+            artisan_wa = request.form.get("artisan_wa", "")
+            commission = float(request.form.get("commission", 0.10))
+            image_file = request.files.get("image")
+        else:
+            data = request.get_json(force=True) or {}
+            tid = data.get("id")
+            name = data.get("name")
+            scale = float(data.get("scale", 2.6))
+            v_offset = float(data.get("v_offset", 0.35))
+            philosophy = data.get("philosophy", "")
+            origin = data.get("origin", "")
+            usage = data.get("usage", "")
+            price = int(data.get("price", 50000))
+            artisan = data.get("artisan", "")
+            artisan_wa = data.get("artisan_wa", "")
+            commission = float(data.get("commission", 0.10))
+            image_file = None
+
+        if not tid or not name:
+            return jsonify({"success": False, "message": "ID dan Nama Tanjak harus diisi"}), 400
+
+        # Handle image file upload
+        file_name = f"{tid}.png"
+        if image_file:
+            image_path = TANJAK_DIR / file_name
+            image_file.save(image_path)
+        else:
+            file_name = "tanjak_lipatan_bugis.png" # default or fallback
+
+        add_tanjak(tid, name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission)
+        return jsonify({"success": True, "message": "Tanjak berhasil ditambahkan", "id": tid})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal menambahkan tanjak: {str(e)}"}), 500
+
+# API: Admin Edit Tanjak
+@app.route("/api/admin/tanjak/edit/<tid>", methods=["PUT", "POST"])
+@admin_required
+def api_admin_tanjak_edit(tid):
+    try:
+        existing = get_tanjak_by_id(tid)
+        if not existing:
+            return jsonify({"success": False, "message": "Tanjak tidak ditemukan"}), 404
+
+        if request.content_type and "multipart" in request.content_type:
+            name = request.form.get("name", existing["name"])
+            scale = float(request.form.get("scale", existing["scale"]))
+            v_offset = float(request.form.get("v_offset", existing["v_offset"]))
+            philosophy = request.form.get("philosophy", existing["philosophy"])
+            origin = request.form.get("origin", existing["origin"])
+            usage = request.form.get("usage", existing["usage"])
+            price = int(request.form.get("price", existing["price"]))
+            artisan = request.form.get("artisan", existing["artisan"])
+            artisan_wa = request.form.get("artisan_wa", existing["artisan_wa"])
+            commission = float(request.form.get("commission", existing["commission"]))
+            is_active = int(request.form.get("is_active", existing["is_active"]))
+            image_file = request.files.get("image")
+        else:
+            data = request.get_json(force=True) or {}
+            name = data.get("name", existing["name"])
+            scale = float(data.get("scale", existing["scale"]))
+            v_offset = float(data.get("v_offset", existing["v_offset"]))
+            philosophy = data.get("philosophy", existing["philosophy"])
+            origin = data.get("origin", existing["origin"])
+            usage = data.get("usage", existing["usage"])
+            price = int(data.get("price", existing["price"]))
+            artisan = data.get("artisan", existing["artisan"])
+            artisan_wa = data.get("artisan_wa", existing["artisan_wa"])
+            commission = float(data.get("commission", existing["commission"]))
+            is_active = int(data.get("is_active", existing["is_active"]))
+            image_file = None
+
+        file_name = existing["file"]
+        if image_file:
+            file_name = f"{tid}.png"
+            image_path = TANJAK_DIR / file_name
+            image_file.save(image_path)
+
+        update_tanjak(tid, name, file_name, scale, v_offset, philosophy, origin, usage, price, artisan, artisan_wa, commission, is_active)
+        return jsonify({"success": True, "message": "Tanjak berhasil diperbarui"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal memperbarui tanjak: {str(e)}"}), 500
+
+# API: Admin Delete Tanjak
+@app.route("/api/admin/tanjak/delete/<tid>", methods=["DELETE", "POST"])
+@admin_required
+def api_admin_tanjak_delete(tid):
+    try:
+        delete_tanjak(tid)
+        return jsonify({"success": True, "message": "Tanjak berhasil dinonaktifkan (soft delete)"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal menghapus tanjak: {str(e)}"}), 500
+
+# API: Admin Add UMKM
+@app.route("/api/admin/umkm/add", methods=["POST"])
+@admin_required
+def api_admin_umkm_add():
+    try:
+        data = request.get_json(force=True) or {}
+        artisan = data.get("artisan")
+        location = data.get("location", "")
+        phone = data.get("phone", "")
+        whatsapp = data.get("whatsapp", "")
+        description = data.get("description", "")
+        rating = float(data.get("rating", 5.0))
+        total_sold = int(data.get("total_sold", 0))
+        tanjak_id = data.get("tanjak_id")
+
+        if not artisan:
+            return jsonify({"success": False, "message": "Nama Pemilik/Artisan harus diisi"}), 400
+
+        add_umkm(artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id)
+        return jsonify({"success": True, "message": "UMKM berhasil ditambahkan"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal menambahkan UMKM: {str(e)}"}), 500
+
+# API: Admin Edit UMKM
+@app.route("/api/admin/umkm/edit/<int:umkm_id>", methods=["PUT", "POST"])
+@admin_required
+def api_admin_umkm_edit(umkm_id):
+    try:
+        data = request.get_json(force=True) or {}
+        artisan = data.get("artisan")
+        location = data.get("location")
+        phone = data.get("phone")
+        whatsapp = data.get("whatsapp")
+        description = data.get("description")
+        rating = float(data.get("rating", 5.0))
+        total_sold = int(data.get("total_sold", 0))
+        tanjak_id = data.get("tanjak_id")
+
+        if not artisan:
+            return jsonify({"success": False, "message": "Nama Pemilik/Artisan harus diisi"}), 400
+
+        update_umkm(umkm_id, artisan, location, phone, whatsapp, description, rating, total_sold, tanjak_id)
+        return jsonify({"success": True, "message": "UMKM berhasil diperbarui"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal memperbarui UMKM: {str(e)}"}), 500
+
+# API: Admin Delete UMKM
+@app.route("/api/admin/umkm/delete/<int:umkm_id>", methods=["DELETE", "POST"])
+@admin_required
+def api_admin_umkm_delete(umkm_id):
+    try:
+        delete_umkm(umkm_id)
+        return jsonify({"success": True, "message": "UMKM berhasil dihapus"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Gagal menghapus UMKM: {str(e)}"}), 500
 
 
 # ============================================================
