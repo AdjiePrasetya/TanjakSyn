@@ -3,13 +3,15 @@ FROM python:3.10-slim
 # Set env supaya apt tidak interaktif
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 🔥 INSTALL SYSTEM LIB - lebih efisien
+# 🔥 INSTALL SYSTEM LIB - Sangat penting untuk MediaPipe, OpenCV, dan ONNX (Rembg)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender1 \
+    libgomp1 \
+    libegl1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

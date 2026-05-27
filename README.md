@@ -124,7 +124,7 @@ tanjak_assets/
 ```
 > Jika belum ada file PNG, sistem akan menggunakan **placeholder sementara** untuk demo.
 
-### LANGKAH 5 — Jalankan Server
+### LANGKAH 6 — Jalankan Server
 
 ```bash
 python app.py
@@ -144,12 +144,13 @@ python app.py
  * Debug mode: on
 ```
 
-### LANGKAH 6 — Buka Aplikasi
+### LANGKAH 7 — Buka Aplikasi
 
 | Platform | URL |
 |----------|-----|
 | **Desktop** (Website) | `http://localhost:5000` |
 | **Mobile** (Jaringan lokal) | `http://[IP-KOMPUTER]:5000` |
+| **Panel Admin** | `http://localhost:5000/admin` |
 
 Untuk mencari IP komputer:
 - **Windows**: `ipconfig` → lihat IPv4 Address
@@ -236,6 +237,8 @@ gallery         → Galeri publik (tryon_id, image_path, likes, is_public...)
 | Port 5000 sudah dipakai (macOS) | Ganti `port=5000` ke `5001` di `app.py` |
 | `Cannot connect to server` | Pastikan `python app.py` sudah dijalankan |
 | Database error | Hapus `database/tanjaksyn.db` lalu restart server |
+| Login admin gagal padahal `.env` sudah dibuat | Pastikan `python-dotenv` terinstall: `pip install python-dotenv` |
+| Login admin masih pakai kredensial lama | Restart server setelah mengubah isi file `.env` |
 
 ---
 
@@ -243,7 +246,7 @@ gallery         → Galeri publik (tryon_id, image_path, likes, is_public...)
 
 | Layer | Stack |
 |-------|-------|
-| **Backend** | Python 3.9+, Flask 3.0, Flask-CORS |
+| **Backend** | Python 3.9+, Flask 3.0, Flask-CORS, python-dotenv |
 | **Database** | SQLite (via Python built-in) |
 | **AI / CV** | MediaPipe Face Mesh (468 landmarks), OpenCV, NumPy |
 | **Frontend** | HTML5, CSS3, Vanilla JS (tanpa framework) |
