@@ -56,6 +56,9 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "tanjaksyn-super-secret-key-
 # Mengaktifkan Cross-Origin Resource Sharing (CORS) untuk membolehkan request AJAX dari luar domain
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+# Memastikan tabel database dan seed data bawaan terbuat saat aplikasi dimuat (sangat penting untuk deployment produksi Gunicorn)
+init_db()
+
 
 # ======================================================================================
 # LAYANAN FILE STATIS FRONTEND (STATIC FRONTEND SERVING)
