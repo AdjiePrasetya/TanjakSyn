@@ -160,7 +160,7 @@ def api_tryon():
             if "person_image" not in request.files:
                 return jsonify({"success": False, "message": "File gambar tidak ditemukan"}), 400
             person_bytes = request.files["person_image"].read()
-            tanjak_id    = request.form.get("tanjak_id", "tanjak_lipatan")
+            tanjak_id    = request.form.get("tanjak_id", "tanjak_lipatan_bugis")
         else:
             # Skenario B: Payload JSON (umum digunakan oleh webcam capture Base64)
             data = request.get_json(force=True)
@@ -172,16 +172,16 @@ def api_tryon():
                 b64 = b64.split(",")[1]
             import base64 as _base64
             person_bytes = _base64.b64decode(b64)
-            tanjak_id    = data.get("tanjak_id", "tanjak_lipatan")
+            tanjak_id    = data.get("tanjak_id", "tanjak_lipatan_bugis")
 
         # ── Mengambil Parameter Konfigurasi Tanjak dari DB ──
         tanjak = get_tanjak_by_id(tanjak_id)
         # Fallback jika ID tanjak tidak ada di database katalog
         if not tanjak:
-            tanjak = get_tanjak_by_id("tanjak_lipatan") or {
-                "id": "tanjak_lipatan", "name": "Tanjak Lipatan",
-                "file": "tanjak_lipatan.png", "scale": 2.6, "v_offset": 0.35,
-                "philosophy": "Simbol Keberanian dan Kepemimpinan",
+            tanjak = get_tanjak_by_id("tanjak_lipatan_bugis") or {
+                "id": "tanjak_lipatan_bugis", "name": "Tanjak Lipatan Bugis",
+                "file": "tanjak_lipatan_bugis.png", "scale": 2.6, "v_offset": 0.35,
+                "philosophy": "Simbol Keberanian dan Kepemimpinan. Setiap lipatan mencerminkan kebijaksanaan pemimpin Melayu yang harus mampu memimpin dengan adil dan tegas.",
                 "price": 50000, "artisan": "Pak Hamdan", "artisan_wa": "6281234567890",
             }
 

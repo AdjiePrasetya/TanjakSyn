@@ -1591,7 +1591,7 @@ a { text-decoration:none; color:inherit; }
 // Objek global S digunakan untuk menampung seluruh state runtime aplikasi SPA ini.
 const S = {
   page:          'home',             // Halaman aktif saat ini (home, education, umkm, gallery, dll.)
-  tanjak:        'tanjak_lipatan',   // ID tanjak terpilih untuk disimulasikan oleh AI
+  tanjak:        'tanjak_lipatan_bugis', // ID tanjak terpilih untuk disimulasikan oleh AI
   tanjakData:    [],                 // Cache array data katalog tanjak dari API
   eduData:       [],                 // Cache array data modul edukasi dari API
   umkmData:      [],                 // Cache array data mitra UMKM dari API
@@ -1712,11 +1712,19 @@ async function loadTanjak() {
     const d = await r.json();
     if (d.success) {
       S.tanjakData = d.data;
+      if (S.tanjakData.length > 0) {
+        const found = S.tanjakData.some(t => t.id === S.tanjak);
+        if (!found) S.tanjak = S.tanjakData[0].id;
+      }
       renderHomeTanjak();
       renderTanjakSelector();
     }
   } catch(e) { 
     S.tanjakData = fallbackTanjak(); 
+    if (S.tanjakData.length > 0) {
+      const found = S.tanjakData.some(t => t.id === S.tanjak);
+      if (!found) S.tanjak = S.tanjakData[0].id;
+    }
     renderHomeTanjak(); 
     renderTanjakSelector(); 
   }
@@ -1780,7 +1788,7 @@ async function loadGallery() {
 // 7. FUNGSI MERENDER UI DARI DATA STATE (DOM RENDERING HELPERS)
 // ════════════════════════════════════════════════════════════════════════════════════
 // Peta emoji ikon visual untuk tombol tanjak fallback
-const ICONS = { tanjak_lipatan:'🎩', tanjak_dondang:'👑', tanjak_nobat:'🏺' };
+const ICONS = { tanjak_lipatan_bugis:'🎩', tanjak_lipatan_pontianak:'👑', tanjak_lipatan_sambas:'🏺' };
 // Pemformat angka mata uang rupiah sesuai standar regional Indonesia
 const fmt = p => `Rp ${Number(p).toLocaleString('id-ID')}`;
 
@@ -2425,9 +2433,9 @@ function toast(msg, type='') {
 
 function fallbackTanjak() { 
   return [
-    {id:'tanjak_lipatan',name:'Tanjak Lipatan',file:'tanjak_lipatan.png',asset_available:false,origin:'Riau',price:50000,philosophy:'Simbol Keberanian dan Kepemimpinan',artisan:'Pak Hamdan',artisan_wa:'6281234567890'},
-    {id:'tanjak_dondang',name:'Tanjak Dondang',file:'tanjak_dondang.png',asset_available:false,origin:'Kepri',price:75000,philosophy:'Simbol Kesucian dan Ketulusan Hati',artisan:'Bu Fatimah',artisan_wa:'6289876543210'},
-    {id:'tanjak_nobat',  name:'Tanjak Nobat',  file:'tanjak_nobat.png',  asset_available:false,origin:'Johor-Melayu',price:100000,philosophy:'Simbol Kemuliaan dan Kehormatan',artisan:'Pak Ismail',artisan_wa:'6285551234567'},
+    {id:'tanjak_lipatan_bugis',name:'Tanjak Lipatan Bugis',file:'tanjak_lipatan_bugis.png',asset_available:false,origin:'Riau',price:50000,philosophy:'Simbol Keberanian dan Kepemimpinan. Setiap lipatan mencerminkan kebijaksanaan pemimpin Melayu yang harus mampu memimpin dengan adil dan tegas.',artisan:'Pak Hamdan',artisan_wa:'6281234567890'},
+    {id:'tanjak_lipatan_pontianak',name:'Tanjak Lipatan Pontianak',file:'tanjak_lipatan_pontianak.png',asset_available:false,origin:'Kepulauan Riau',price:75000,philosophy:'Simbol Kesucian dan Ketulusan Hati. Tanjak Lipatan Pontianak melambangkan kemurnian niat dalam setiap tindakan, warisan budaya bangsawan Melayu.',artisan:'Bu Fatimah',artisan_wa:'6289876543210'},
+    {id:'tanjak_lipatan_sambas',  name:'Tanjak Lipatan Sambas',  file:'tanjak_lipatan_sambas.png',  asset_available:false,origin:'Johor-Melayu',price:100000,philosophy:'Simbol Kemuliaan dan Kehormatan Tertinggi. Dipakai oleh raja dan bangsawan dalam upacara kenegaraan sebagai tanda martabat dan wibawa.',artisan:'Pak Ismail',artisan_wa:'6285551234567'},
   ];
 }
 

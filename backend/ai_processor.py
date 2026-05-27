@@ -478,14 +478,22 @@ def create_placeholder_tanjak():
         np.ndarray: Citra placeholder format BGRA berukuran 320x200 piksel.
     """
     h, w = 200, 320
-    img = np.zeros((h, w, 4), dtype=np.uint8)
+    # Membuat citra BGR kontigu 3-saluran untuk warna segitiga dan outline
+    bgr = np.zeros((h, w, 3), dtype=np.uint8)
+    # Membuat citra Alpha kontigu 1-saluran untuk transparansi
+    alpha = np.zeros((h, w, 1), dtype=np.uint8)
+    
     pts = np.array([[w // 2, 5], [w - 10, h - 10], [10, h - 10]], np.int32)
+    
     # Mengisi warna maroon pada isi segitiga
-    cv2.fillPoly(img[:, :, :3], [pts], (20, 10, 100))
-    # Memberi transparansi penuh pada area luar segitiga, dan solid di dalam segitiga
-    cv2.fillPoly(img[:, :, 3:4], [pts], (255,))
-    # Menggambar outline berwarna emas terang
-    cv2.polylines(img[:, :, :3], [pts], True, (0, 180, 220), 3)
+    cv2.fillPoly(bgr, [pts], (20, 10, 100))
+    # Memberi transparansi solid (255) di dalam segitiga
+    cv2.fillPoly(alpha, [pts], (255,))
+    # Menggambar outline berwarna emas terang pada BGR
+    cv2.polylines(bgr, [pts], True, (0, 180, 220), 3)
+    
+    # Menggabungkan saluran BGR dan Alpha secara kontigu
+    img = np.dstack((bgr, alpha))
     return img
 
 
