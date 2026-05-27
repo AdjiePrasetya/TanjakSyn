@@ -11,6 +11,7 @@ tanjaksyn2/
 ├── app.py                        # 🚀 Backend Flask utama
 ├── requirements.txt              # 📦 Dependensi Python
 ├── README.md                     # 📖 Dokumentasi ini
+├── .env                          # 🔑 Konfigurasi kredensial admin
 │
 ├── backend/
 │   ├── __init__.py
@@ -22,18 +23,36 @@ tanjaksyn2/
 │   └── tanjaksyn.db              # 🗃️ Auto-created saat pertama dijalankan
 │
 ├── frontend/
-│   ├── index.html                # 🌐 UI Responsif (Desktop + Mobile)
+│   ├── index.html                # 🌐 UI Client Utama (Try-On & Galeri)
+│   ├── admin.html                # 👑 UI Panel Admin CRUD
 │   └── assets/
 │       └── logo.png              # 🖼️ Logo TanjakSyn
 │
-├── tanjak_assets/                # 🎩 Taruh PNG tanjak transparan di sini
+├── tanjak_assets/                # 🎩 Aset PNG tanjak transparan
 │   ├── tanjak_lipatan.png
 │   ├── tanjak_dondang.png
 │   └── tanjak_nobat.png
 │
-├── uploads/                      # 📁 Auto-created
+├── uploads/                      # 📁 Auto-created (foto upload try-on)
 └── outputs/                      # 📁 Auto-created (hasil try-on)
 ```
+
+---
+
+## 🌟 FITUR UTAMA PROYEK
+
+1. **AI Virtual Try-On Tanjak secara Real-Time**:
+   Mencoba tanjak secara langsung melalui kamera web atau unggah foto. Memanfaatkan **MediaPipe Face Mesh** untuk mendeteksi posisi kepala secara presisi (468 landmarks), menghitung skala, orientasi, serta melakukan overlay visual tanjak dengan mulus.
+2. **Katalog Warisan Budaya Interaktif**:
+   Daftar komprehensif jenis tanjak Melayu yang dilengkapi detail asal-usul, fungsi penggunaan adat, harga, serta cerita filosofi budayanya.
+3. **Pemberdayaan Pengrajin Lokal (Sistem Kemitraan UMKM)**:
+   Menghubungkan pembeli langsung dengan pengrajin (artisan) pembuat tanjak. Menyediakan tombol kontak langsung via WhatsApp, peta lokasi, rating, dan data penjualan.
+4. **Galeri Publik Karya Pengguna**:
+   Pengguna dapat membagikan hasil foto try-on terbaik mereka ke galeri bersama yang dapat dilihat dan disukai (like) oleh pengunjung lain.
+5. **Dashboard Panel Admin Terproteksi (CRUD)**:
+   Halaman khusus `/admin` untuk mengelola katalog produk (tambah produk dengan upload gambar, edit spesifikasi scaling try-on, soft-delete) serta database mitra UMKM secara mudah dan aman dengan otentikasi Flask Session.
+6. **Desain Visual Heritage & Responsif**:
+   Tampilan antarmuka mewah dengan palet warna tradisional (Maroon, Gold, Cream) yang dioptimalkan secara mobile-first untuk pengalaman pengguna terbaik di semua ukuran layar.
 
 ---
 
@@ -76,7 +95,25 @@ type nul > database/__init__.py
 touch backend/__init__.py database/__init__.py
 ```
 
-### LANGKAH 4 — Siapkan Aset Tanjak (PENTING)
+### LANGKAH 4 — Konfigurasi File `.env`
+
+Buat file `.env` di root folder project untuk mengatur kredensial admin:
+
+```env
+ADMIN_USERNAME = "nama_admin_kamu"
+ADMIN_PASSWORD = "password_rahasia_kamu"
+FLASK_SECRET_KEY = "ganti-dengan-string-acak-yang-panjang"
+```
+
+> ⚠️ **Penting:** Jika file `.env` tidak dibuat, sistem akan menggunakan nilai default berikut:
+> - Username: `admin`
+> - Password: `admin123`
+>
+> **Sangat disarankan** untuk mengubah kredensial default sebelum digunakan di lingkungan produksi.
+>
+> 📌 File `.env` sudah otomatis diabaikan oleh Git (tercantum di `.gitignore`) sehingga **tidak akan ter-upload** ke repositori publik.
+
+### LANGKAH 5 — Siapkan Aset Tanjak (PENTING)
 
 Masukkan file PNG tanjak **dengan background transparan** ke folder `tanjak_assets/`:
 ```
@@ -142,20 +179,37 @@ Untuk mencari IP komputer:
 
 ## 📡 API ENDPOINTS
 
+### Endpoint Publik (Client)
+
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| GET | `/` | Frontend HTML |
-| GET | `/api/tanjak` | Daftar semua tanjak + status aset |
-| GET | `/api/tanjak/:id` | Detail tanjak |
-| POST | `/api/tryon` | Proses AI try-on (JSON base64) |
-| POST | `/api/tryon` | Proses AI try-on (multipart form) |
-| GET | `/api/result/:file` | Ambil gambar hasil |
-| GET | `/api/education` | Daftar konten edukasi |
-| GET | `/api/umkm` | Daftar pengrajin UMKM |
-| GET | `/api/gallery` | Galeri publik |
-| POST | `/api/gallery/save` | Simpan ke galeri |
-| GET | `/api/stats` | Statistik platform |
-| GET | `/api/tanjak-asset/:file` | Preview gambar tanjak |
+| GET | `/` | Antarmuka pengguna client utama |
+| GET | `/api/tanjak` | Daftar produk tanjak aktif & status asetnya |
+| GET | `/api/tanjak/:id` | Detail data produk tanjak tertentu |
+| POST | `/api/tryon` | Pemrosesan virtual try-on (input JSON base64 / multipart) |
+| GET | `/api/result/:file` | Mengambil gambar hasil pemrosesan try-on |
+| GET | `/api/education` | Daftar artikel edukasi warisan budaya |
+| GET | `/api/umkm` | Daftar mitra pengrajin UMKM |
+| GET | `/api/gallery` | Daftar foto di galeri publik |
+| POST | `/api/gallery/save` | Menyimpan gambar hasil try-on ke galeri publik |
+| GET | `/api/stats` | Informasi statistik singkat platform |
+| GET | `/api/tanjak-asset/:file` | Menampilkan preview file gambar tanjak asli |
+
+### Endpoint Panel Admin (Terproteksi Session)
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/admin` | Antarmuka panel dashboard admin (Auth Guarded) |
+| POST | `/api/admin/login` | Proses login session admin |
+| POST | `/api/admin/logout` | Proses logout session admin |
+| GET | `/api/admin/check-session` | Cek validitas session admin aktif |
+| GET | `/api/admin/tanjak` | Mengambil semua produk tanjak (termasuk status tidak aktif) |
+| POST | `/api/admin/tanjak/add` | Menambah produk tanjak baru (mendukung upload berkas `.png`) |
+| PUT | `/api/admin/tanjak/edit/:id` | Mengubah spesifikasi, harga, filosofi, atau gambar tanjak |
+| DELETE | `/api/admin/tanjak/delete/:id` | Soft delete tanjak (mengubah flag status `is_active` menjadi 0) |
+| POST | `/api/admin/umkm/add` | Menambah data profil pengrajin UMKM baru |
+| PUT | `/api/admin/umkm/edit/:id` | Mengubah detail data profil pengrajin UMKM |
+| DELETE | `/api/admin/umkm/delete/:id` | Menghapus permanen profil pengrajin UMKM |
 
 ---
 
