@@ -994,11 +994,239 @@ a { text-decoration:none; color:inherit; }
   #toast { top:auto; bottom:100px; left:16px; right:16px; }
   .result-layout { grid-template-columns:1fr; }
 }
+
+/* ════════════════════════════════════════════════════════
+   WEBCAM MODAL & CONTROLS (ADDED)
+   ════════════════════════════════════════════════════════ */
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 3, 6, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 20px;
+  animation: cameraFadeIn 0.3s var(--ease);
+}
+
+@keyframes cameraFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.camera-card {
+  background: var(--c-maroon-dd);
+  border: 1px solid rgba(196, 151, 58, 0.4);
+  border-radius: var(--r-xl);
+  max-width: 500px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  animation: cameraCardSlide 0.4s var(--bounce);
+}
+
+@keyframes cameraCardSlide {
+  from { transform: translateY(30px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.camera-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(196, 151, 58, 0.15);
+  padding-bottom: 12px;
+}
+
+.camera-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-gold-l);
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.camera-close {
+  color: rgba(240, 208, 128, 0.5);
+  font-size: 20px;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.camera-close:hover {
+  color: var(--c-gold-xl);
+}
+
+.camera-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: 1px solid rgba(196, 151, 58, 0.2);
+  background: #000;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror selfie view */
+}
+
+/* Face outline guide */
+.camera-silhouette-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.camera-silhouette {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 58%; height: 72%;
+  border: 2px dashed rgba(196, 151, 58, 0.5);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  box-shadow: 0 0 0 9999px rgba(20, 3, 6, 0.45);
+}
+
+.camera-silhouette-text {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(240, 208, 128, 0.85);
+  font-size: 11px;
+  font-family: var(--font-heading);
+  letter-spacing: 1px;
+  text-align: center;
+  background: rgba(20, 3, 6, 0.7);
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid rgba(196, 151, 58, 0.2);
+}
+
+.camera-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: 8px;
+}
+
+.btn-cam-action {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(196, 151, 58, 0.25);
+  color: var(--c-gold-l);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.25s var(--ease);
+  cursor: pointer;
+}
+.btn-cam-action:hover {
+  background: rgba(196, 151, 58, 0.12);
+  border-color: var(--c-gold);
+  transform: scale(1.05);
+}
+
+.btn-shutter {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(196, 151, 58, 0.15);
+  border: 3px solid var(--c-gold);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s var(--ease);
+  cursor: pointer;
+}
+.btn-shutter-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-gold-l), var(--c-gold-d));
+  box-shadow: var(--shadow-gold);
+  transition: all 0.2s;
+}
+.btn-shutter:hover {
+  transform: scale(1.08);
+}
+.btn-shutter:hover .btn-shutter-inner {
+  background: linear-gradient(135deg, var(--c-gold-xl), var(--c-gold));
+}
+.btn-shutter:active {
+  transform: scale(0.95);
+}
+
+.cam-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(196, 151, 58, 0.25);
+  color: var(--c-gold-xl);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  padding: 10px 20px;
+  border-radius: var(--r-sm);
+  transition: all 0.3s var(--ease);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.cam-btn-secondary:hover {
+  background: rgba(196, 151, 58, 0.1);
+  border-color: var(--c-gold);
+}
 </style>
 </head>
 <body>
 <input type="file" id="file-input" accept="image/*">
 <div id="toast"></div>
+
+<!-- WEBCAM MODAL (ADDED) -->
+<div id="camera-modal" class="camera-modal" style="display: none;">
+  <div class="camera-card">
+    <div class="camera-header">
+      <div class="camera-title">
+        <span>📷</span> KAMERA VIRTUAL TRY-ON
+      </div>
+      <button class="camera-close" onclick="closeCamera()">&times;</button>
+    </div>
+    <div class="camera-video-wrap">
+      <video id="webcam-video" class="camera-video" autoplay playsinline></video>
+      <div class="camera-silhouette-wrap">
+        <div class="camera-silhouette"></div>
+        <div class="camera-silhouette-text">Posisikan wajah Anda di dalam siluet</div>
+      </div>
+    </div>
+    <div class="camera-controls">
+      <button class="btn-cam-action" onclick="closeCamera()" title="Batal" style="font-size: 14px;">❌</button>
+      <button class="btn-shutter" onclick="takePhoto()" title="Ambil Foto">
+        <div class="btn-shutter-inner"></div>
+      </button>
+      <button class="btn-cam-action" id="btn-switch-cam" onclick="switchCamera()" title="Ganti Kamera">🔄</button>
+    </div>
+  </div>
+</div>
 
 <!-- SPLASH -->
 <div id="page-splash">
@@ -1133,15 +1361,24 @@ a { text-decoration:none; color:inherit; }
           <!-- Viewport -->
           <div>
             <div class="tryon-viewport-panel" id="tryon-viewport">
-              <div class="viewport-empty" id="viewport-empty" onclick="triggerUpload()">
+              <div class="viewport-empty" id="viewport-empty">
                 <div class="viewport-ring">📷</div>
-                <div class="viewport-empty-title">Unggah Foto Wajahmu</div>
-                <div class="viewport-empty-sub">Klik atau drag foto ke sini<br>JPG, PNG hingga 10MB</div>
+                <div class="viewport-empty-title">Coba Virtual Try-On</div>
+                <div class="viewport-empty-sub" style="margin-bottom: 8px;">Unggah foto wajahmu atau ambil langsung dari kamera</div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; z-index: 5; position: relative;">
+                  <button class="cam-btn-secondary" onclick="triggerUpload()" style="margin-top: 0; padding: 10px 16px;">
+                    📁 UNGGAH FOTO
+                  </button>
+                  <button class="cam-btn-secondary" onclick="openCamera()" style="margin-top: 0; padding: 10px 16px; background: linear-gradient(135deg, var(--c-gold), var(--c-gold-d)); color: var(--c-maroon-dd); font-weight: 700; border: none; box-shadow: var(--shadow-gold);">
+                    📷 AMBIL FOTO
+                  </button>
+                </div>
               </div>
               <img id="tryon-img" alt="Preview">
               <canvas id="tryon-canvas"></canvas>
               <div class="viewport-controls" id="vp-controls" style="display:none">
-                <button class="vp-ctrl-btn" onclick="triggerUpload()">🔄 GANTI FOTO</button>
+                <button class="vp-ctrl-btn" onclick="triggerUpload()">📁 UPLOAD FOTO</button>
+                <button class="vp-ctrl-btn" onclick="openCamera()">📷 BUKA KAMERA</button>
                 <button class="vp-ctrl-btn" id="btn-process-vp" onclick="processImage()">✨ PASANG TANJAK</button>
               </div>
               <div class="detection-chip" id="det-chip">
@@ -1175,12 +1412,15 @@ a { text-decoration:none; color:inherit; }
                 <span>📁</span>
                 <span class="ctrl-card-title">UPLOAD FOTO</span>
               </div>
-              <div class="ctrl-card-body">
+              <div class="ctrl-card-body" style="display: flex; flex-direction: column; gap: 12px;">
                 <div class="upload-zone" onclick="triggerUpload()">
                   <div class="upload-icon">🖼️</div>
                   <div class="upload-title">PILIH FOTO</div>
                   <div class="upload-sub">Wajah <strong>menghadap depan</strong>, tegak &amp; simetris<br>JPG/PNG hingga 15MB</div>
                 </div>
+                <button class="cam-btn-secondary" style="width: 100%;" onclick="openCamera()">
+                  📷 BUKA KAMERA UTAMA
+                </button>
               </div>
             </div>
 
@@ -1357,6 +1597,8 @@ const S = {
   uploadedB64:   null,
   resultData:    null,
   processingId:  null,
+  cameraStream:  null,
+  facingMode:    'user',
 };
 
 const API = window.location.origin;
@@ -1635,6 +1877,127 @@ viewport.addEventListener('drop', e => {
 });
 
 // ════════════════════════════════════════════════════════
+// WEBCAM / KAMERA INTEGRATION (ADDED)
+// ════════════════════════════════════════════════════════
+async function openCamera() {
+  closeCamera(); // Pastikan stream sebelumnya dihentikan
+  const modal = document.getElementById('camera-modal');
+  modal.style.display = 'flex';
+  
+  const video = document.getElementById('webcam-video');
+  video.style.transform = S.facingMode === 'user' ? 'scaleX(-1)' : 'none';
+
+  // Cek jumlah kamera video untuk tombol switch cam
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+    const switchBtn = document.getElementById('btn-switch-cam');
+    if (switchBtn) {
+      switchBtn.style.display = videoDevices.length > 1 ? 'flex' : 'none';
+    }
+  } catch (e) {
+    console.warn("Gagal mendeteksi input video tambahan", e);
+  }
+
+  const constraints = {
+    video: {
+      facingMode: S.facingMode,
+      width: { ideal: 640 },
+      height: { ideal: 480 }
+    },
+    audio: false
+  };
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    S.cameraStream = stream;
+    video.srcObject = stream;
+    video.play();
+    toast('Kamera diaktifkan', 'ok');
+  } catch (err) {
+    console.error("Gagal membuka kamera:", err);
+    toast('Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.', 'err');
+    closeCamera();
+  }
+}
+
+function closeCamera() {
+  const modal = document.getElementById('camera-modal');
+  if (modal) modal.style.display = 'none';
+
+  if (S.cameraStream) {
+    S.cameraStream.getTracks().forEach(track => track.stop());
+    S.cameraStream = null;
+  }
+
+  const video = document.getElementById('webcam-video');
+  if (video) video.srcObject = null;
+}
+
+function switchCamera() {
+  S.facingMode = S.facingMode === 'user' ? 'environment' : 'user';
+  openCamera();
+}
+
+function takePhoto() {
+  const video = document.getElementById('webcam-video');
+  const canvas = document.getElementById('tryon-canvas');
+  if (!video || !canvas || !S.cameraStream) return;
+
+  const width = video.videoWidth || 640;
+  const height = video.videoHeight || 480;
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+
+  // Gambar dengan rotasi cermin jika kamera depan (user)
+  if (S.facingMode === 'user') {
+    ctx.translate(width, 0);
+    ctx.scale(-1, 1);
+  }
+
+  ctx.drawImage(video, 0, 0, width, height);
+
+  // Kembalikan transformasi normal
+  if (S.facingMode === 'user') {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  // Ambil data Base64 jpeg berkualitas tinggi
+  const base64Img = canvas.toDataURL('image/jpeg', 0.95);
+  S.uploadedB64 = base64Img;
+
+  // Hentikan stream kamera
+  closeCamera();
+
+  // Update pratinjau di viewport
+  const img = document.getElementById('tryon-img');
+  if (img) {
+    img.src = base64Img;
+    img.style.display = 'block';
+  }
+  
+  const empty = document.getElementById('viewport-empty');
+  if (empty) empty.style.display = 'none';
+  
+  const ctrl = document.getElementById('vp-controls');
+  if (ctrl) ctrl.style.display = 'flex';
+
+  const btnProcess = document.getElementById('btn-process');
+  if (btnProcess) btnProcess.disabled = false;
+
+  const btnProcessVp = document.getElementById('btn-process-vp');
+  if (btnProcessVp) btnProcessVp.disabled = false;
+
+  showChip('Foto siap!', 'ok');
+  toast('Foto berhasil diambil dari kamera!', 'ok');
+
+  // Jalankan fungsi otomatis (auto-submit) ke endpoint /api/tryon
+  processImage();
+}
+
+// ════════════════════════════════════════════════════════
 // PROCESS IMAGE
 // ════════════════════════════════════════════════════════
 // == Face direction error modal ==
@@ -1713,6 +2076,7 @@ function showFaceDirectionError(msg) {
 
 // == Loading step animation ==
 var _LOAD_STEPS = [
+  'Sedang memproses wajah...',
   'Mendeteksi wajah...',
   'Memvalidasi arah wajah...',
   'Menghapus background...',
