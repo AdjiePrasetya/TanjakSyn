@@ -58,20 +58,95 @@ tanjaksyn2/
 
 ## ⚡ RUNTUTAN MENJALANKAN
 
-### LANGKAH 1 — Persiapan Python
+### LANGKAH 1 — Persiapan Python & Setup `pyenv` (Rekomendasi Versi 3.10.11)
 
-```bash
-# Masuk ke folder project
-cd tanjaksyn2
+Proyek ini menggunakan pustaka **MediaPipe** yang membutuhkan Python versi **3.9 s.d. 3.11** (belum mendukung secara penuh di versi 3.12+). Kami **sangat menyarankan versi 3.10.11**.
 
-# Buat virtual environment
-python -m venv venv
+Gunakan **`pyenv`** untuk mengelola versi Python tanpa merusak versi sistem bawaan. Berikut adalah panduan instalasinya untuk Linux dan Windows:
 
-# Aktifkan virtual environment:
-source venv/bin/activate        # macOS / Linux
-venv\Scripts\activate           # Windows (cmd)
-.\venv\Scripts\Activate.ps1     # Windows (PowerShell)
-```
+---
+
+#### 🐧 Panduan Linux (Ubuntu/Debian/macOS)
+
+1. **Instal dependensi build sistem** (diperlukan untuk mengompilasi Python):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
+   libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+   libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
+   libffi-dev liblzma-dev git
+   ```
+
+2. **Unduh dan instal `pyenv`**:
+   ```bash
+   curl https://pyenv.run | bash
+   ```
+
+3. **Konfigurasikan Environment Variables**:
+   Tambahkan baris berikut di akhir file `~/.bashrc` (atau `~/.zshrc` jika menggunakan Zsh):
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init -)"
+   eval "$(pyenv virtualenv-init -)"
+   ```
+   Terapkan perubahan dengan menjalankan: `source ~/.bashrc` (atau `source ~/.zshrc`).
+
+4. **Instal Python 3.10.11**:
+   ```bash
+   pyenv install 3.10.11
+   ```
+
+5. **Set versi lokal di folder proyek**:
+   ```bash
+   cd TanjakSyn
+   pyenv local 3.10.11
+   ```
+
+6. **Buat dan aktifkan Virtual Environment**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+---
+
+#### 🪟 Panduan Windows (cmd/PowerShell)
+
+1. **Instal `pyenv-win`**:
+   Buka PowerShell sebagai Administrator dan jalankan perintah:
+   ```powershell
+   Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
+   ```
+
+2. **Konfigurasikan Environment Variables Windows**:
+   Cari *"Edit the system environment variables"* di menu Start Windows, buka tab *Environment Variables*, lalu tambahkan variabel berikut di bagian **User variables**:
+   - Klik **New**: `PYENV` -> `%USERPROFILE%\.pyenv\pyenv-win\`
+   - Cari baris `Path`, pilih **Edit**, lalu klik **New** untuk menambahkan dua baris berikut:
+     - `%PYENV%\bin`
+     - `%PYENV%\shims`
+   
+   Tutup dan buka kembali PowerShell/CMD Anda agar perubahan terbaca.
+
+3. **Instal Python 3.10.11**:
+   ```cmd
+   pyenv install 3.10.11
+   ```
+
+4. **Set versi lokal di folder proyek**:
+   ```cmd
+   cd TanjakSyn
+   pyenv local 3.10.11
+   ```
+
+5. **Buat dan aktifkan Virtual Environment**:
+   ```cmd
+   python -m venv venv
+   
+   # Aktifkan virtual environment:
+   venv\Scripts\activate           # Windows (cmd)
+   .\venv\Scripts\Activate.ps1     # Windows (PowerShell)
+   ```
 
 ### LANGKAH 2 — Install Semua Dependensi
 
